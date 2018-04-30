@@ -3,6 +3,9 @@
     package="mafioso.so.so.android_robot">
 
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature android:name="android.hardware.location.gps" />
+
     <supports-screens android:resizeable="true"
         android:smallScreens="true"
         android:normalScreens="true"

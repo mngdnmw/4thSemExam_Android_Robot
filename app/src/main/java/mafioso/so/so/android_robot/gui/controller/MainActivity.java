@@ -1,5 +1,7 @@
 package mafioso.so.so.android_robot.gui.controller;
 
+import android.Manifest;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat array255;
     private Mat distance;
 
+    Button btnLocation1;
+
+    GpsLocation gps;
+
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -78,11 +84,29 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+
+        gps = new GpsLocation(this);
+
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        btnLocation1 = findViewById(R.id.btnLocation);
+
+        btnLocation1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "btn works");
+
+                //GpsLocation.this.showLastKnownLocation();
+                Log.d(TAG, "Current Loc "+ gps.lastKnownLocation().getLatitude() + " " + gps.lastKnownLocation().getLongitude());
+                Log.e(TAG, "btn works");
+            }
+        });
     }
 
 
