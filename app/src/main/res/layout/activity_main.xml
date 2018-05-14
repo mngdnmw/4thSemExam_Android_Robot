@@ -65,4 +65,17 @@
         app:layout_constraintStart_toEndOf="@+id/btnConnect"
         app:layout_constraintTop_toBottomOf="@+id/txtIP" />
 
+    <ImageView
+        android:id="@+id/mImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnConnect"
+        app:layout_constraintHorizontal_bias="0.133"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@mipmap/ic_launcher" />
+
 </android.support.constraint.ConstraintLayout>
