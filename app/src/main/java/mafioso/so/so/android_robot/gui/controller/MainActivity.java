@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         hasPermissions(this);
         setLayout();
         setListeners();
+        loadConnectionUI();
 
         int Permission_All = 1;
 
@@ -259,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void loadConnectionUI() {
 
         final TextView txtIP = findViewById(R.id.txtIP);
-        txtIP.setText("192.168.43.208");
+        txtIP.setText("192.168.43.174");
         Button btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
