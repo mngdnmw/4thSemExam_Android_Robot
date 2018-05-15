@@ -49,23 +49,21 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private DataInputStream dis;
     private Socket socket = new Socket();
 
-    private static final String TAG = "OCVSample::Activity";
+    private static final String TAG = "OCV";
     private CameraBridgeViewBase mOpenCvCameraView;
-
     private Mat mRgba;
     private Mat mIntermediateMat;
     private Mat mGray;
     private Mat mHSV;
     private Mat mThresholded;
     private Mat mThresholded2;
-    private Mat array255;
-    private Mat distance;
+    private Mat mArray255;
+    private Mat mDistance;
 
-    Button btnLocation1;
+    private Button btnLocation;
+    private ImageView mImageView;
 
-    ImageView mImageView;
-
-    GpsLocation gps;
+    private GpsLocation mGps;
 
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -91,15 +89,31 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        getPermissions();
+        setLayout();
+        setListeners();
+
+    }
+
+    /**
+     * Request for permissions needed for the application.
+     */
+
+    public void getPermissions() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+    }
 
-        gps = new GpsLocation(this);
+
+    /**
+     * Sets up layout with the objects.
+     */
+    public void setLayout() {
+        mGps = new GpsLocation(this);
 
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
 
@@ -107,18 +121,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         mOpenCvCameraView.setCvCameraViewListener(this);
 
-        btnLocation1 = findViewById(R.id.btnLocation);
+        btnLocation = findViewById(R.id.btnLocation);
 
         mImageView = findViewById(R.id.mImageView);
+    }
 
-        btnLocation1.setOnClickListener(new View.OnClickListener() {
+    /**
+     * Sets up listeners.
+     */
+    public void setListeners() {
+        btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e(TAG, "btn works");
-
-                //GpsLocation.this.showLastKnownLocation();
-                Log.d(TAG, "Current Loc "+ gps.lastKnownLocation().getLatitude() + " " + gps.lastKnownLocation().getLongitude());
-                Log.e(TAG, "btn works");
+                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
             }
         });
     }
@@ -154,8 +169,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mHSV = new Mat(height, width, CvType.CV_8UC4);
         mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
         mGray = new Mat(height, width, CvType.CV_8UC1);
-        array255 = new Mat(height, width, CvType.CV_8UC1);
-        distance = new Mat(height, width, CvType.CV_8UC1);
+        mArray255 = new Mat(height, width, CvType.CV_8UC1);
+        mDistance = new Mat(height, width, CvType.CV_8UC1);
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
 
@@ -175,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         //HVS
         List<Mat> lhsv = new ArrayList<>(3);
         Mat circles = new Mat();
-        array255.setTo(new Scalar(255));
+        mArray255.setTo(new Scalar(255));
         Scalar hsv_min = new Scalar(0, 50, 50, 0);
         Scalar hsv_max = new Scalar(6, 255, 255, 0);
         Scalar hsv_min2 = new Scalar(175, 50, 50, 0);
@@ -190,12 +205,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Core.split(mHSV, lhsv); // We get 3 2D one channel Mats
         Mat S = lhsv.get(1);
         Mat V = lhsv.get(2);
-        Core.subtract(array255, S, S);
-        Core.subtract(array255, V, V);
+        Core.subtract(mArray255, S, S);
+        Core.subtract(mArray255, V, V);
         S.convertTo(S, CvType.CV_32F);
         V.convertTo(V, CvType.CV_32F);
-        Core.magnitude(S, V, distance);
-        Core.inRange(distance, new Scalar(0.0), new Scalar(200.0), mThresholded2);
+        Core.magnitude(S, V, mDistance);
+        Core.inRange(mDistance, new Scalar(0.0), new Scalar(200.0), mThresholded2);
         Core.bitwise_and(mThresholded, mThresholded2, mThresholded);
         // Apply the Hough Transform to find the circles
         Imgproc.GaussianBlur(mThresholded, mThresholded, new Size(9, 9), 0, 0);
@@ -216,11 +231,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 Imgproc.ellipse(mRgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
             }
         }
+
+        //Releasing all, to fix problem with heap space
+        System.gc();
+        lhsv.clear();
+        S.release();
+        V.release();
+        circles.release();
+
         return mRgba;
     }
 
 
-    protected void loadUI() {
+    protected void loadConnectionUI() {
 
         final TextView txtIP = findViewById(R.id.txtIP);
         txtIP.setText("192.168.43.208");
@@ -235,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     }
 
-    /*
+    /**
      * Connecting to robot in new thread.
      */
     private void threadConnection(final String host) {
