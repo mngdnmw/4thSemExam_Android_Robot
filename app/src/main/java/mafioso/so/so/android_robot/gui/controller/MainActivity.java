@@ -1,9 +1,12 @@
 package mafioso.so.so.android_robot.gui.controller;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -93,19 +96,29 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
-        getPermissions();
+        hasPermissions(this);
         setLayout();
         setListeners();
 
+        int Permission_All = 1;
+
+        String[] Permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
+        if  (!hasPermissions(this, Permissions)){
+            ActivityCompat.requestPermissions(this, Permissions, Permission_All);
+        }
+
+
     }
 
-    /**
-     * Request for permissions needed for the application.
-     */
-
-    public void getPermissions() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+    public static boolean hasPermissions(Context context, String... permissions){
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M && context!= null && permissions != null){
+            for(String permission: permissions){
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
