@@ -1,9 +1,12 @@
 package mafioso.so.so.android_robot.gui.controller;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
@@ -44,7 +47,7 @@ import java.util.List;
 
 import mafioso.so.so.android_robot.R;
 
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2{
 
     private DataOutputStream dos;
     private DataInputStream dis;
@@ -66,7 +69,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private GpsLocation mGps;
 
-
+    private boolean connected = false;
+    private TextView txtIP;
+    private Button btnConnect;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -94,25 +99,40 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
-        getPermissions();
+        btnConnect = findViewById(R.id.btnConnect);
+        txtIP = findViewById(R.id.txtIP);
+        hasPermissions(this);
         setLayout();
         setListeners();
+        loadConnectionUI();
+
+        int Permission_All = 1;
+
+        String[] Permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
+      /*  if  (!hasPermissions(this, Permissions)){
+            ActivityCompat.requestPermissions(this, Permissions, Permission_All);
+        }*/
+
 
     }
 
-    /**
-     * Request for permissions needed for the application.
-     */
 
-    public void getPermissions() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
     /**
      * Sets up layout with the objects.
      */
+
     public void setLayout() {
         mGps = new GpsLocation(this);
 
@@ -127,9 +147,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mImageView = findViewById(R.id.mImageView);
     }
 
-    /**
+
+    /*
      * Sets up listeners.
      */
+
     public void setListeners() {
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,6 +210,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         //RBGA
         mRgba = inputFrame.rgba();
+
 
 //        final Handler handler = new Handler();
 //        Runnable runnable = new Runnable() {
@@ -264,6 +287,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             for (int i = 0; i < data2.length; i = i + 3) {
                 Point center = new Point(data2[i], data2[i + 1]);
                 Imgproc.ellipse(mRgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
+
                 double dimen = (double) data2[i + 2];
                 Log.d("Measurement", Double.toString(dimen));
             }
@@ -275,21 +299,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 S.release();
                 V.release();
                 circles.release();
-
         return mRgba;
     }
-
+    
 
     protected void loadConnectionUI() {
 
-        final TextView txtIP = findViewById(R.id.txtIP);
-        txtIP.setText("192.168.43.208");
-        Button btnConnect = findViewById(R.id.btnConnect);
+        txtIP.setText("192.168.43.174");
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                threadConnection(txtIP.getText().toString());
-
+                if (!socket.isConnected()) {
+                    threadConnection(txtIP.getText().toString());
+                    btnConnect.setText("Command");
+                } else if (socket.isConnected()) {
+                    sendCommand(txtIP.getText().toString());
+                }
             }
         });
 
@@ -304,10 +329,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 try {
                     if (!socket.isConnected()) {
                         socket = new Socket(host, 5969);
+                        socket.setKeepAlive(true);
+
                         dis = new DataInputStream(socket.getInputStream());
                         dos = new DataOutputStream(socket.getOutputStream());
+
                     }
-                    sendCommand("We Are Here");
                 } catch (UnknownHostException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -320,17 +347,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     /**
      * Sending stuff to the robot.
+     * Possible Commands =
+     * "Roam", "Quit","Back", "Left","Right","Forward","Stop","ChangeDirection"
      */
-    private void sendCommand(String command) {
-        try {
+    private void sendCommand(final String command) {
+        new Thread() {
+            public void run() {
+                try {
 
-            dos.writeUTF(command);
-            dos.flush();
+                    dos.writeUTF(command);
+                    dos.flush();
 
 
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     /**
@@ -380,9 +413,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
+                imageFileName, //* prefix *//*
+                ".jpg",         //* suffix *//*
+        storageDir //* directory *//*
         );
 
         // Save a file: path for use with ACTION_VIEW intents
