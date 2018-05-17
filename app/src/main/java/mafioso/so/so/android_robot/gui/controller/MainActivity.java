@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
@@ -88,9 +89,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     };
 
-    public MainActivity() {
-        Log.i(TAG, "Instantiated new" + this.getClass());
-    }
+//    public MainActivity() {
+//        Log.i(TAG, "Instantiated new" + this.getClass());
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     }
 
+
     public void onCameraViewStopped() {
         mRgba.release();
         mGray.release();
@@ -206,47 +208,79 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
-
         //RBGA
         mRgba = inputFrame.rgba();
-        // if thread is running, dont run thread.
-        //else run thread. give inputframe.
-       /* //HVS
+
+
+//        final Handler handler = new Handler();
+//        Runnable runnable = new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                Log.d("myRunnable", "gets in here");
+//
+////
+////
+////                handler.postDelayed(this, 1000);
+//            }
+//        };
+//        handler.postDelayed(runnable, 1000);
+//
+
+//HSV
         List<Mat> lhsv = new ArrayList<>(3);
         Mat circles = new Mat();
+
         mArray255.setTo(new Scalar(255));
+
+        // Note that the default color format in OpenCV is often referred to as RGB but it is actually BGR (the bytes are reversed).
+        // Scalar(B,G,R,A)
         Scalar hsv_min = new Scalar(0, 50, 50, 0);
         Scalar hsv_max = new Scalar(6, 255, 255, 0);
         Scalar hsv_min2 = new Scalar(175, 50, 50, 0);
         Scalar hsv_max2 = new Scalar(179, 255, 255, 0);
-        // One way to select a range of colors by Hue
-        Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV, 4);
 
+        // Converts rgba to hsv
+        // cvtColor(InputArray src, OutputArray dst, int code, int dstCn=0 )
+        // dstCn = number of channels in the destination image; if the parameter is 0, the number of the channels is derived automatically from src and code
+        Imgproc.cvtColor(mRgba, mHSV, Imgproc.COLOR_RGB2HSV, 0);
+
+        // Checks if array elements lie between the elements of two other arrays
         Core.inRange(mHSV, hsv_min, hsv_max, mThresholded);
         Core.inRange(mHSV, hsv_min2, hsv_max2, mThresholded2);
         Core.bitwise_or(mThresholded, mThresholded2, mThresholded);
 
-        Core.split(mHSV, lhsv); // We get 3 2D one channel Mats
+        // We get 3 2D one channel Mats
+        Core.split(mHSV, lhsv);
         Mat S = lhsv.get(1);
         Mat V = lhsv.get(2);
+
+        //Gets the inverse
         Core.subtract(mArray255, S, S);
         Core.subtract(mArray255, V, V);
+
+        //Converts to 32 bytes
         S.convertTo(S, CvType.CV_32F);
         V.convertTo(V, CvType.CV_32F);
+
         Core.magnitude(S, V, mDistance);
         Core.inRange(mDistance, new Scalar(0.0), new Scalar(200.0), mThresholded2);
         Core.bitwise_and(mThresholded, mThresholded2, mThresholded);
-        // Apply the Hough Transform to find the circles
+
+        // Reduce the noise so we avoid false circle detection
         Imgproc.GaussianBlur(mThresholded, mThresholded, new Size(9, 9), 0, 0);
+        // Apply the Hough Transform to find the circles
+        // mThresholded - input image
+        // circles - a vector that stores sets of 3 values xc, yc and r for each detected circle
+        // mThresholded.height() / 4 - min distance between detected centers
         Imgproc.HoughCircles(mThresholded, circles, Imgproc.CV_HOUGH_GRADIENT, 2, mThresholded.height() / 4, 500, 50, 0, 0);
 
-//        //Edge detector
-//        Imgproc.Canny(mThresholded, mThresholded, 500, 250);
-//        // It is just for display
-//        Imgproc.cvtColor(mThresholded, mRgba, Imgproc.COLOR_GRAY2RGB, 4);
+        Log.d("circles", "circles "+circles.toString());
 
+        // Draw the circles detected
         int rows = circles.rows();
-        int elemSize = (int) circles.elemSize(); // Returns 12 (3 * 4bytes in a float)
+        // Returns 12 (3 * 4bytes in a float)
+        int elemSize = (int) circles.elemSize();
         float[] data2 = new float[rows * elemSize / 4];
         if (data2.length > 0) {
             circles.get(0, 0, data2); // Points to the first element and reads the whole thing into data2
@@ -254,16 +288,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 Point center = new Point(data2[i], data2[i + 1]);
                 Imgproc.ellipse(mRgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
 
+                double dimen = (double) data2[i + 2];
+                Log.d("Measurement", Double.toString(dimen));
             }
         }
 
-        //Releasing all, to fix problem with heap space
-        System.gc();
-        lhsv.clear();
-        S.release();
-        V.release();
-        circles.release();
-*/
+                //Releasing all, to fix problem with heap space
+                System.gc();
+                lhsv.clear();
+                S.release();
+                V.release();
+                circles.release();
         return mRgba;
     }
     
