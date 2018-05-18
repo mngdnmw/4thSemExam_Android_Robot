@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
@@ -26,13 +25,9 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -41,14 +36,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import mafioso.so.so.android_robot.R;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2{
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private DataOutputStream dos;
     private DataInputStream dis;
@@ -92,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getPermissions();
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
@@ -102,19 +96,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         setLayout();
         setListeners();
         loadConnectionUI();
+    }
 
-        int Permission_All = 1;
-
-        String[] Permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
-      /*  if  (!hasPermissions(this, Permissions)){
-            ActivityCompat.requestPermissions(this, Permissions, Permission_All);
-        }*/
-
+    protected void getPermissions() {
+        int allPermissions = 1;
+        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
+        if (!hasPermissions(this, permissions)) {
+            ActivityCompat.requestPermissions(this, permissions, allPermissions);
+        }
 
     }
 
 
-    public static boolean hasPermissions(Context context, String... permissions) {
+    protected static boolean hasPermissions(Context context, String... permissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -130,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Sets up layout with the objects.
      */
 
-    public void setLayout() {
+    protected void setLayout() {
         mGps = new GpsLocation(this);
 
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
@@ -145,11 +139,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
 
-    /*
+    /**
      * Sets up listeners.
      */
 
-    public void setListeners() {
+    protected void setListeners() {
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,6 +179,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     public void onCameraViewStarted(int width, int height) {
+
+        Log.d("center_point: width, height", Integer.toString(width) + "," + Integer.toString(height));
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mHSV = new Mat(height, width, CvType.CV_8UC4);
         mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
@@ -211,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         ImgProcessing imgProc = new ImgProcessing();
 
-        double diameter = imgProc.getDiameter( mRgba,  mHSV,  mThresholded,  mThresholded2,  mArray255,  mDistance);
+        double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
         Log.d("Diameter ", Double.toString(diameter));
 
 //        final Handler handler = new Handler();
@@ -232,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         return mRgba;
     }
-    
+
 
     protected void loadConnectionUI() {
 
@@ -254,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     /**
      * Connecting to robot in new thread.
      */
-    private void threadConnection(final String host) {
+    protected void threadConnection(final String host) {
         new Thread() {
             public void run() {
                 try {
@@ -281,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * Possible Commands =
      * "Roam", "Quit","Back", "Left","Right","Forward","Stop","ChangeDirection"
      */
-    private void sendCommand(final String command) {
+    protected void sendCommand(final String command) {
         new Thread() {
             public void run() {
                 try {
@@ -297,60 +293,60 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }.start();
     }
 
-    /**
-     * working on the image capture and sending it from here and down.
-     */
-
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-
-    static final int REQUEST_TAKE_PHOTO = 1;
-
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
-                        photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            mImageView.setImageBitmap(imageBitmap);
-        }
-    }
-
-    String mCurrentPhotoPath;
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName, //* prefix *//*
-                ".jpg",         //* suffix *//*
-        storageDir //* directory *//*
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
+//    /**
+//     * working on the image capture and sending it from here and down.
+//     */
+//
+//    static final int REQUEST_IMAGE_CAPTURE = 1;
+//
+//    static final int REQUEST_TAKE_PHOTO = 1;
+//
+//    private void dispatchTakePictureIntent() {
+//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        // Ensure that there's a camera activity to handle the intent
+//        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//            // Create the File where the photo should go
+//            File photoFile = null;
+//            try {
+//                photoFile = createImageFile();
+//            } catch (IOException ex) {
+//                // Error occurred while creating the File
+//            }
+//            // Continue only if the File was successfully created
+//            if (photoFile != null) {
+//                Uri photoURI = FileProvider.getUriForFile(this,
+//                        "com.example.android.fileprovider",
+//                        photoFile);
+//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+//                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+//            }
+//        }
+//    }
+//
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+//            Bundle extras = data.getExtras();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+//            mImageView.setImageBitmap(imageBitmap);
+//        }
+//    }
+//
+//    String mCurrentPhotoPath;
+//
+//    private File createImageFile() throws IOException {
+//        // Create an image file name
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//        String imageFileName = "JPEG_" + timeStamp + "_";
+//        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+//        File image = File.createTempFile(
+//                imageFileName, //* prefix *//*
+//                ".jpg",         //* suffix *//*
+//                storageDir //* directory *//*
+//        );
+//
+//        // Save a file: path for use with ACTION_VIEW intents
+//        mCurrentPhotoPath = image.getAbsolutePath();
+//        return image;
+//    }
 }
