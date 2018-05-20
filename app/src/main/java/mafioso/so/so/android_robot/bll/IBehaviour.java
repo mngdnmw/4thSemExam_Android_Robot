@@ -1,4 +1,4 @@
-package mafioso.so.so.android_robot.logic;
+package mafioso.so.so.android_robot.bll;
 
 public interface IBehaviour {
 

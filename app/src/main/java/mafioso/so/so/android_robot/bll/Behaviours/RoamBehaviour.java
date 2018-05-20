@@ -1,6 +1,6 @@
-package mafioso.so.so.android_robot.logic.Behaviours;
+package mafioso.so.so.android_robot.bll.Behaviours;
 
-import mafioso.so.so.android_robot.logic.IBehaviour;
+import mafioso.so.so.android_robot.bll.IBehaviour;
 
 public class RoamBehaviour implements IBehaviour {
     private boolean suppressed;

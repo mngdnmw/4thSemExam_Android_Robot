@@ -13,10 +13,12 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+import mafioso.so.so.android_robot.be.Circle;
+
 public class ImgProcessing {
 
 
-    public double getDiameter(Mat rgba, Mat hsv, Mat thresholded, Mat thresholded2, Mat array255, Mat distance) {
+    public Circle getCircle(Mat rgba, Mat hsv, Mat thresholded, Mat thresholded2, Mat array255, Mat distance) {
 
         array255.setTo(new Scalar(255));
 
@@ -87,7 +89,8 @@ public class ImgProcessing {
             // Imgproc.ellipse(rgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
 
             double mainAxis = (double) data2[0 + 2] * 2;
-            return mainAxis;
+
+            return new Circle(center, mainAxis);
             //}
         }
 
@@ -98,6 +101,6 @@ public class ImgProcessing {
         V.release();
         circles.release();
 
-        return 0;
+        return null;
     }
 }

@@ -29,6 +29,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import mafioso.so.so.android_robot.R;
+import mafioso.so.so.android_robot.be.Circle;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
@@ -277,8 +278,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             ImgProcessing imgProc = new ImgProcessing();
 
             while (mIsRunning) {
-                double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
-                Log.d("myRunnable ", "diameter " + Double.toString(diameter));
+                Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+                if (circle != null) {
+                    Log.d("myRunnable ", "diameter " + Double.toString(circle.getDiameter()));
+                    Log.d("myRunnable ", "center " + circle.getCenter().toString());
+                }
                 try {
                     Thread.sleep(THREAD_SLEEP);
                 } catch (InterruptedException e) {
