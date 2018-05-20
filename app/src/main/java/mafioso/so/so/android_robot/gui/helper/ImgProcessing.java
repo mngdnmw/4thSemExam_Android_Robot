@@ -15,9 +15,6 @@ import java.util.List;
 
 public class ImgProcessing {
 
-//    private double diameter;
-//    private
-
 
     public double getDiameter(Mat rgba, Mat hsv, Mat thresholded, Mat thresholded2, Mat array255, Mat distance) {
 
@@ -79,17 +76,17 @@ public class ImgProcessing {
         if (data2.length > 0) {
             // Points to the first element and reads the whole thing into data2
             circles.get(0, 0, data2);
-            for (int i = 0; i < data2.length; i = i + 3) {
+            //for (int i = 0; i < data2.length; i = i + 3) {
                 // Draw the circles detected
-                Point center = new Point(data2[i], data2[i + 1]);
+                Point center = new Point(data2[0], data2[0 + 1]);
                 Log.d("center_point ", center.toString());
                 // (InputOutputArray img, Point center, Size axes, double angle, double startAngle, double endAngle, const Scalar& color, int thickness=1, int lineType=LINE_8, int shift=0 )
                 // axes – Half of the size of the ellipse main axes
                 // Imgproc.ellipse(rgba, center, new Size((double) data2[i + 2], (double) data2[i + 2]), 0, 0, 360, new Scalar(255, 0, 255), 4, 8, 0);
 
-                double mainAxis = (double) data2[i + 2] * 2;
+                double mainAxis = (double) data2[0 + 2] * 2;
                 return mainAxis;
-            }
+            //}
         }
 
         //Releasing all, to fix problem with heap space
