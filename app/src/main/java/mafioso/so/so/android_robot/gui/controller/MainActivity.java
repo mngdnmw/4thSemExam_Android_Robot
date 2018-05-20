@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Button btnLocation;
     private ImageView mImageView;
     private GpsLocation mGps;
+    private boolean mIsRunning;
 
     private boolean connected = false;
     private TextView txtIP;
@@ -96,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         setLayout();
         setListeners();
         loadConnectionUI();
+        mIsRunning = true;
+
     }
 
     protected void getPermissions() {
@@ -158,11 +161,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         super.onPause();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
+        mIsRunning = false;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        mIsRunning = true;
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Internal OpenCV libary not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
@@ -174,8 +179,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void onDestroy() {
         super.onDestroy();
+        mIsRunning = false;
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
+
     }
 
     public void onCameraViewStarted(int width, int height) {
@@ -190,6 +197,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
 
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                ImgProcessing imgProc = new ImgProcessing();
+                while (mIsRunning) {
+                    double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+                    Log.d("myRunnable ", "diameter " + Double.toString(diameter));
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("myRunnable", "ending thread");
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
+
     }
 
 
@@ -197,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mRgba.release();
         mGray.release();
         mIntermediateMat.release();
+        mIsRunning = false;
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
@@ -204,27 +232,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         //RBGA
         mRgba = inputFrame.rgba();
         mArray255.setTo(new Scalar(255));
-
-        ImgProcessing imgProc = new ImgProcessing();
-
-        double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
-        Log.d("Diameter ", Double.toString(diameter));
-
-//        final Handler handler = new Handler();
-//        Runnable runnable = new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                Log.d("myRunnable", "gets in here");
-//
-////
-////
-////                handler.postDelayed(this, 1000);
-//            }
-//        };
-//        handler.postDelayed(runnable, 1000);
-//
-
 
         return mRgba;
     }
