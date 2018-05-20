@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private GpsLocation mGps;
     private boolean mIsRunning;
 
+    private static long THREAD_SLEEP = 500;
+
     private boolean connected = false;
     private TextView txtIP;
     private Button btnConnect;
@@ -196,26 +198,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mDistance = new Mat(height, width, CvType.CV_8UC1);
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                ImgProcessing imgProc = new ImgProcessing();
-                while (mIsRunning) {
-                    double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
-                    Log.d("myRunnable ", "diameter " + Double.toString(diameter));
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                Log.d("myRunnable", "ending thread");
-            }
-        };
-
-        Thread thread = new Thread(runnable);
-        thread.start();
+        new Thread(new ImgProcessingRunnable()).start();
 
     }
 
@@ -298,6 +281,24 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 }
             }
         }.start();
+    }
+    private class ImgProcessingRunnable implements Runnable {
+
+
+        public void run() {
+            ImgProcessing imgProc = new ImgProcessing();
+            while (mIsRunning) {
+                double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+                Log.d("myRunnable ", "diameter " + Double.toString(diameter));
+                try {
+                    Thread.sleep(THREAD_SLEEP);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d("myRunnable", "ending thread");
+
+        }
     }
 
 //    /**
