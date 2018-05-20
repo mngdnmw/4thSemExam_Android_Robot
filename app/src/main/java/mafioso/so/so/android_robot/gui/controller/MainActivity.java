@@ -2,15 +2,9 @@ package mafioso.so.so.android_robot.gui.controller;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,18 +21,15 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import mafioso.so.so.android_robot.R;
+import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
@@ -103,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     }
 
+
     protected void getPermissions() {
         int allPermissions = 1;
         String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
@@ -111,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
 
     }
-
 
     protected static boolean hasPermissions(Context context, String... permissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
@@ -189,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void onCameraViewStarted(int width, int height) {
 
-        Log.d("center_point: width, height", Integer.toString(width) + "," + Integer.toString(height));
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mHSV = new Mat(height, width, CvType.CV_8UC4);
         mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
@@ -212,10 +202,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
-        //RBGA
         mRgba = inputFrame.rgba();
-        mArray255.setTo(new Scalar(255));
-
         return mRgba;
     }
 
@@ -282,11 +269,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             }
         }.start();
     }
+
     private class ImgProcessingRunnable implements Runnable {
 
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
+
             while (mIsRunning) {
                 double diameter = imgProc.getDiameter(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
                 Log.d("myRunnable ", "diameter " + Double.toString(diameter));
@@ -296,65 +285,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                     e.printStackTrace();
                 }
             }
-            Log.d("myRunnable", "ending thread");
 
         }
     }
 
-//    /**
-//     * working on the image capture and sending it from here and down.
-//     */
-//
-//    static final int REQUEST_IMAGE_CAPTURE = 1;
-//
-//    static final int REQUEST_TAKE_PHOTO = 1;
-//
-//    private void dispatchTakePictureIntent() {
-//        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        // Ensure that there's a camera activity to handle the intent
-//        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//            // Create the File where the photo should go
-//            File photoFile = null;
-//            try {
-//                photoFile = createImageFile();
-//            } catch (IOException ex) {
-//                // Error occurred while creating the File
-//            }
-//            // Continue only if the File was successfully created
-//            if (photoFile != null) {
-//                Uri photoURI = FileProvider.getUriForFile(this,
-//                        "com.example.android.fileprovider",
-//                        photoFile);
-//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-//                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            Bundle extras = data.getExtras();
-//            Bitmap imageBitmap = (Bitmap) extras.get("data");
-//            mImageView.setImageBitmap(imageBitmap);
-//        }
-//    }
-//
-//    String mCurrentPhotoPath;
-//
-//    private File createImageFile() throws IOException {
-//        // Create an image file name
-//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-//        String imageFileName = "JPEG_" + timeStamp + "_";
-//        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-//        File image = File.createTempFile(
-//                imageFileName, //* prefix *//*
-//                ".jpg",         //* suffix *//*
-//                storageDir //* directory *//*
-//        );
-//
-//        // Save a file: path for use with ACTION_VIEW intents
-//        mCurrentPhotoPath = image.getAbsolutePath();
-//        return image;
-//    }
 }
