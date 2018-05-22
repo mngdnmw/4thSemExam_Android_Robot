@@ -13,11 +13,13 @@ public class Circle {
     }
 
     public Point getCenter() {
+
         return mCenter;
     }
 
 
     public double getDiameter() {
+
         return mDiameter;
     }
 }

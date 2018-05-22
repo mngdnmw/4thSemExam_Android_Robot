@@ -40,12 +40,10 @@ import mafioso.so.so.android_robot.shared.Callback;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
-    private DataOutputStream dos;
-    private DataInputStream dis;
-    private Socket socket = new Socket();
-    private RobotConnection robotConnection= new RobotConnection();
-    private static final String TAG = "OCV";
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private static final String TAG = "Testing things";
+    private static long THREAD_SLEEP = 500;
+
+    private boolean mIsRunning;
     private Mat mRgba;
     private Mat mIntermediateMat;
     private Mat mGray;
@@ -54,24 +52,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat mThresholded2;
     private Mat mArray255;
     private Mat mDistance;
-
-    private Button btnLocation;
-    private ImageView mImgViewUploaded;
+    private CameraBridgeViewBase mOpenCvCameraView;
     private GpsLocation mGps;
-    private boolean mIsRunning;
-
-    private static long THREAD_SLEEP = 500;
-    private Context mContext;
     private BllFacade mBllFac;
 
+    //TODO fix for layers ----------------------------------------
+    private RobotConnection robotConnection= new RobotConnection();
+    //TODO -------------------------------------------------------
+
+    //TODO delete ------------------------------------------------
+    private Button btnLocation;
     private TextView txtIP;
     private Button btnConnect;
+    private ImageView mImgViewUploaded;
+    //TODO -------------------------------------------------------
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "Opencv loaded successfully");
                     mOpenCvCameraView.enableView();
                 }
                 break;
@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mContext = this;
         getPermissions();
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -102,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mBllFac = new BllFacade();
 
     }
-
 
     protected void getPermissions() {
         int allPermissions = 1;
@@ -234,24 +232,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //TODO fix this so it fits the layers
                 robotConnection.threadConnection(txtIP.getText().toString());
                 //new Thread(new ImgProcessingRunnable()).start();
             }
         });
 
     }
-
-    /**
-     * Connecting to robot in new thread.
-     */
-
-
-
-    /**
-     * Sending stuff to the robot.
-     * Possible Commands =
-     * "Roam", "Quit","Back", "Left","Right","Forward","Stop","ChangeDirection"
-     */
 
 
     private class ImgProcessingRunnable implements Runnable {
