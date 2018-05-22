@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 
 import mafioso.so.so.android_robot.R;
 import mafioso.so.so.android_robot.be.Circle;
+import mafioso.so.so.android_robot.dal.RobotConnection;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private DataOutputStream dos;
     private DataInputStream dis;
     private Socket socket = new Socket();
-
+    private RobotConnection robotConnection= new RobotConnection();
     private static final String TAG = "OCV";
     private CameraBridgeViewBase mOpenCvCameraView;
     private Mat mRgba;
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static long THREAD_SLEEP = 500;
 
-    private boolean connected = false;
     private TextView txtIP;
     private Button btnConnect;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -189,7 +189,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mDistance = new Mat(height, width, CvType.CV_8UC1);
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
-        new Thread(new ImgProcessingRunnable()).start();
 
     }
 
@@ -214,12 +213,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!socket.isConnected()) {
-                    threadConnection(txtIP.getText().toString());
-                    btnConnect.setText("Command");
-                } else if (socket.isConnected()) {
-                    sendCommand(txtIP.getText().toString());
-                }
+                robotConnection.threadConnection(txtIP.getText().toString());
+                new Thread(new ImgProcessingRunnable()).start();
             }
         });
 
@@ -228,48 +223,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     /**
      * Connecting to robot in new thread.
      */
-    protected void threadConnection(final String host) {
-        new Thread() {
-            public void run() {
-                try {
-                    if (!socket.isConnected()) {
-                        socket = new Socket(host, 5969);
-                        socket.setKeepAlive(true);
 
-                        dis = new DataInputStream(socket.getInputStream());
-                        dos = new DataOutputStream(socket.getOutputStream());
 
-                    }
-                } catch (UnknownHostException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-    }
 
     /**
      * Sending stuff to the robot.
      * Possible Commands =
      * "Roam", "Quit","Back", "Left","Right","Forward","Stop","ChangeDirection"
      */
-    protected void sendCommand(final String command) {
-        new Thread() {
-            public void run() {
-                try {
 
-                    dos.writeUTF(command);
-                    dos.flush();
-
-
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }.start();
-    }
 
     private class ImgProcessingRunnable implements Runnable {
 
