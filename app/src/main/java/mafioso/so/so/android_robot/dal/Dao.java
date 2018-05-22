@@ -1,33 +1,27 @@
 package mafioso.so.so.android_robot.dal;
 
-
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+
 import android.location.Location;
-import android.net.Uri;
+
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
+import java.util.Date;
 
-import mafioso.so.so.android_robot.R;
 
 public class Dao {
     FirebaseStorage mStorage;
     StorageReference mStorageRef, mThisImageRef;
-
-    FirebaseFirestore mDb;
-    FirebaseFunctions mFunctions;
     UploadTask mUploadTask;
 
     final static String TAG = "Testing stuff";
@@ -35,22 +29,14 @@ public class Dao {
     public Dao() {
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference();
-        mDb = FirebaseFirestore.getInstance();
-        mFunctions = FirebaseFunctions.getInstance();
+
     }
 
-    //public void uploadImage(Context context, Bitmap image, Location lastKnownLocation)
-    //public void uploadImage(Context context, final Location lastLoc) {
-        public void uploadImage(Context context) {
+    public boolean uploadImage(Bitmap image, final Location lastKnownLocation) {
 
-
-        mThisImageRef = mStorageRef.child("/images/bitmap2.jpg");
-
-
-        Log.d(TAG, "Sending image" );
-        Drawable drawable = context.getDrawable(R.drawable.ic_launcher_foreground);
-        Bitmap image = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
-                Bitmap.Config.ARGB_8888);
+        final boolean successfulUpload;
+        Date currentTime = Calendar.getInstance().getTime();
+        mThisImageRef = mStorageRef.child("/images/" + currentTime.toString() + ".JPG");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -61,23 +47,29 @@ public class Dao {
         mUploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-                Log.d(TAG, exception.toString() );
+                // TODO Handle unsuccessful uploads
+                Log.d(TAG, exception.toString());
+
+
+                //successfulUpload = false;
+
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Log.d(TAG,  downloadUrl.toString());
 
-                //updateMetadata(lastLoc);
+                ///successfulUpload = true;
+                updateMetadata(lastKnownLocation);
             }
         });
 
+        //return successfulUpload;
+
+        return true;
+
     }
 
-    private void updateMetadata(Location lastKnownLocation){
+    private void updateMetadata(Location lastKnownLocation) {
         StorageMetadata metadata = new StorageMetadata.Builder()
                 .setCustomMetadata("Latitude", Double.toString(lastKnownLocation.getLatitude()))
                 .setCustomMetadata("Longitude", Double.toString(lastKnownLocation.getLongitude()))
@@ -87,7 +79,7 @@ public class Dao {
                 .addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
                     @Override
                     public void onSuccess(StorageMetadata storageMetadata) {
-                        Log.d(TAG, "Updated meta");
+                        Log.d(TAG, "Updated meta" + storageMetadata.getBucket().toString());
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
