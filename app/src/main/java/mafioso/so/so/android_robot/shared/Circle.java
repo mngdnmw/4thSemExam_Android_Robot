@@ -1,4 +1,4 @@
-package mafioso.so.so.android_robot.be;
+package mafioso.so.so.android_robot.shared;
 
 import org.opencv.core.Point;
 

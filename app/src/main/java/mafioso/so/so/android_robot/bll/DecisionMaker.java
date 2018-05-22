@@ -5,7 +5,7 @@ import android.util.Log;
 
 import org.opencv.core.Point;
 
-import mafioso.so.so.android_robot.be.Circle;
+import mafioso.so.so.android_robot.shared.Circle;
 import mafioso.so.so.android_robot.bll.Behaviours.RoamBehaviour;
 import mafioso.so.so.android_robot.dal.RobotConnection;
 

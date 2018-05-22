@@ -3,6 +3,8 @@ package mafioso.so.so.android_robot.gui.controller;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -29,11 +31,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import mafioso.so.so.android_robot.R;
-import mafioso.so.so.android_robot.be.Circle;
 import mafioso.so.so.android_robot.dal.RobotConnection;
-import mafioso.so.so.android_robot.dal.Dao;
+import mafioso.so.so.android_robot.shared.Circle;
+import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
+import mafioso.so.so.android_robot.shared.Callback;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -53,12 +56,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat mDistance;
 
     private Button btnLocation;
-    private ImageView mImageView;
+    private ImageView mImgViewUploaded;
     private GpsLocation mGps;
     private boolean mIsRunning;
 
     private static long THREAD_SLEEP = 500;
     private Context mContext;
+    private BllFacade mBllFac;
 
     private TextView txtIP;
     private Button btnConnect;
@@ -95,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         setListeners();
         loadConnectionUI();
         mIsRunning = true;
+        mBllFac = new BllFacade();
 
     }
 
@@ -135,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         btnLocation = findViewById(R.id.btnLocation);
 
-        mImageView = findViewById(R.id.mImageView);
+        mImgViewUploaded = findViewById(R.id.mImageView);
     }
 
 
@@ -147,8 +152,20 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
-                new Dao().uploadImage(mContext);
+
+                final Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.dwimage);
+
+                if (mGps.lastKnownLocation() != null){
+
+                    mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback(){
+                        @Override
+                        public void onTaskCompleted(boolean done) {
+                            mImgViewUploaded.setImageBitmap(image);
+
+                        }
+                    });
+
+                }
             }
         });
     }
@@ -261,5 +278,4 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         }
     }
-
 }
