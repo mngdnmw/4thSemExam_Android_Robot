@@ -4,8 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,7 +12,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -46,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat mThresholded2;
     private Mat mArray255;
     private Mat mDistance;
+    private BaseLoaderCallback mLoaderCallback;
     private CameraBridgeViewBase mOpenCvCameraView;
     private GpsLocation mGps;
     private BllFacade mBllFac;
@@ -54,49 +52,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private RobotConnection robotConnection = new RobotConnection();
 
     //TODO delete ------------------------------------------------
-    private TextView txtIP;
-    private Button btnConnect;
-
-    //TODO implement ------------------------------------------------
-    protected void uploadImage(final Bitmap image) {
-
-        if (mGps.lastKnownLocation() != null) {
-
-            mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
-                @Override
-                public void onTaskCompleted(boolean done) {
-                    //TODO something with the GUI to notify image has been uploaded
-
-                }
-            });
-
-        }
-
-    }
-    //TODO -------------------------------------------------------
-
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    mOpenCvCameraView.enableView();
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
+    private TextView mTxtIP;
+    private Button mBtnConnect;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        mBllFac = new BllFacade();
 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -105,11 +66,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         hasPermissions(this);
         getPermissions();
 
-        mIsRunning = true;
-        setLayout();
-
-        btnConnect = findViewById(R.id.btnConnect);
-        txtIP = findViewById(R.id.txtIP);
+        setupMemberVariables();
+        mBtnConnect = findViewById(R.id.btnConnect);
+        mTxtIP = findViewById(R.id.txtIP);
         loadConnectionUI();
 
     }
@@ -134,19 +93,30 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return true;
     }
 
-
-    /**
-     * Sets up layout with the objects.
-     */
-
-    protected void setLayout() {
+    private void setupMemberVariables() {
+        mIsRunning = true;
+        mBllFac = new BllFacade();
         mGps = new GpsLocation(this);
 
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
-
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
-
         mOpenCvCameraView.setCvCameraViewListener(this);
+        mLoaderCallback = new BaseLoaderCallback(this) {
+            @Override
+            public void onManagerConnected(int status) {
+                switch (status) {
+                    case LoaderCallbackInterface.SUCCESS: {
+                        mOpenCvCameraView.enableView();
+                    }
+                    break;
+                    default: {
+                        super.onManagerConnected(status);
+                    }
+                    break;
+                }
+            }
+        };
+
     }
 
     @Override
@@ -208,12 +178,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     protected void loadConnectionUI() {
 
-        txtIP.setText("192.168.43.174");
-        btnConnect.setOnClickListener(new View.OnClickListener() {
+        mTxtIP.setText("192.168.43.174");
+        mBtnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //TODO fix this so it fits the layers
-                robotConnection.threadConnection(txtIP.getText().toString());
+                robotConnection.threadConnection(mTxtIP.getText().toString());
                 //new Thread(new ImgProcessingRunnable()).start();
             }
         });
@@ -233,8 +203,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
 
                 if (circle != null) {
-                    Log.d("myRunnable ", "diameter " + Double.toString(circle.getDiameter()));
-                    Log.d("myRunnable ", "center " + circle.getCenter().toString());
+                    Log.d(TAG, "diameter " + Double.toString(circle.getDiameter()));
+                    Log.d(TAG, "center " + circle.getCenter().toString());
                 }
                 try {
                     Thread.sleep(THREAD_SLEEP);
@@ -244,5 +214,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             }
 
         }
+    }
+
+    protected void uploadImage(final Bitmap image) {
+
+        if (mGps.lastKnownLocation() != null) {
+
+            mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
+                @Override
+                public void onTaskCompleted(boolean done) {
+                    //TODO something with the GUI to notify image has been uploaded
+
+                }
+            });
+
+        } else {
+            Log.i("Error", "No location found, cannot upload image");
+        }
+
     }
 }
