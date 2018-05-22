@@ -31,6 +31,7 @@ import java.net.UnknownHostException;
 import mafioso.so.so.android_robot.R;
 import mafioso.so.so.android_robot.be.Circle;
 import mafioso.so.so.android_robot.dal.RobotConnection;
+import mafioso.so.so.android_robot.dal.Dao;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private boolean mIsRunning;
 
     private static long THREAD_SLEEP = 500;
+    private Context mContext;
 
     private TextView txtIP;
     private Button btnConnect;
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mContext = this;
         getPermissions();
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -144,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
+//                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
+                new Dao().uploadImage(mContext);
             }
         });
     }
@@ -214,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             @Override
             public void onClick(View v) {
                 robotConnection.threadConnection(txtIP.getText().toString());
-                new Thread(new ImgProcessingRunnable()).start();
+                //new Thread(new ImgProcessingRunnable()).start();
             }
         });
 
@@ -238,9 +242,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-
+            while(!robotConnection.isConnected()){
+                Thread.yield();
+            }
             while (mIsRunning) {
                 Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+
                 if (circle != null) {
                     Log.d("myRunnable ", "diameter " + Double.toString(circle.getDiameter()));
                     Log.d("myRunnable ", "center " + circle.getCenter().toString());

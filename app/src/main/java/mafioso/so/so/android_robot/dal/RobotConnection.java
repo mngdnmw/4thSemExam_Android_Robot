@@ -17,14 +17,13 @@ private DataInputStream dis;
         new Thread() {
             public void run() {
                 try {
-                    if (!socket.isConnected()) {
                         socket = new Socket(host, 5969);
                         socket.setKeepAlive(true);
 
                         dis = new DataInputStream(socket.getInputStream());
                         dos = new DataOutputStream(socket.getOutputStream());
 
-                    }
+
                 }
                 catch (UnknownHostException e) {
                     // TODO Auto-generated catch block
@@ -51,7 +50,20 @@ private DataInputStream dis;
             }.start();
         }
         public boolean isConnected(){
-         return socket.isConnected();
+            if(socket ==null){
+                return false;
+            }
+            else    {
+            return socket.isConnected();
+            }
         }
+
+    public DataInputStream getDis() {
+        return dis;
     }
+
+    public DataOutputStream getDos() {
+        return dos;
+    }
+}
 
