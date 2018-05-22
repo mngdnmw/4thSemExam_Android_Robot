@@ -4,7 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,10 +31,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import mafioso.so.so.android_robot.R;
-import mafioso.so.so.android_robot.be.Circle;
+import mafioso.so.so.android_robot.shared.Circle;
 import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
+import mafioso.so.so.android_robot.shared.Callback;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -151,14 +152,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                final Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.dwimage);
+
                 if (mGps.lastKnownLocation() != null){
 
-                    Drawable drawable = mContext.getDrawable(R.drawable.dwimage);
-                    Bitmap image = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
-                            Bitmap.Config.ARGB_8888);
-                    if(mBllFac.uploadImage(image, mGps.lastKnownLocation())){
-                        mImgViewUploaded.setImageBitmap(image);
-                    }
+                    mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback(){
+                        @Override
+                        public void onTaskCompleted(boolean done) {
+                            mImgViewUploaded.setImageBitmap(image);
+
+                        }
+                    });
+
                 }
             }
         });

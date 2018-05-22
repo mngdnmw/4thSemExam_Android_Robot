@@ -1,7 +1,5 @@
 package mafioso.so.so.android_robot.gui.helper;
 
-import android.util.Log;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -13,7 +11,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import mafioso.so.so.android_robot.be.Circle;
+import mafioso.so.so.android_robot.shared.Circle;
 
 public class ImgProcessing {
 
