@@ -52,40 +52,29 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     //TODO fix for layers ----------------------------------------
     private RobotConnection robotConnection = new RobotConnection();
-    //TODO -------------------------------------------------------
 
     //TODO delete ------------------------------------------------
-    private Button btnLocation;
     private TextView txtIP;
     private Button btnConnect;
-    private ImageView mImgViewUploaded;
 
-    /**
-     * Will delete this once photo is taken
-     */
+    //TODO implement ------------------------------------------------
+    protected void uploadImage(final Bitmap image) {
 
-    protected void setListeners() {
-        btnLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if (mGps.lastKnownLocation() != null) {
 
-                final Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.dwimage);
-
-                if (mGps.lastKnownLocation() != null) {
-
-                    mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
-                        @Override
-                        public void onTaskCompleted(boolean done) {
-                            mImgViewUploaded.setImageBitmap(image);
-
-                        }
-                    });
+            mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
+                @Override
+                public void onTaskCompleted(boolean done) {
+                    //TODO something with the GUI to notify image has been uploaded
 
                 }
-            }
-        });
+            });
+
+        }
+
     }
     //TODO -------------------------------------------------------
+
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -106,19 +95,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getPermissions();
+
+        mBllFac = new BllFacade();
+
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
+        hasPermissions(this);
+        getPermissions();
+
+        mIsRunning = true;
+        setLayout();
+
         btnConnect = findViewById(R.id.btnConnect);
         txtIP = findViewById(R.id.txtIP);
-        hasPermissions(this);
-        setLayout();
-        setListeners();
         loadConnectionUI();
-        mIsRunning = true;
-        mBllFac = new BllFacade();
 
     }
 
@@ -132,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     protected static boolean hasPermissions(Context context, String... permissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+        if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
                     return false;
@@ -155,10 +147,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
         mOpenCvCameraView.setCvCameraViewListener(this);
-
-        btnLocation = findViewById(R.id.btnLocation);
-
-        mImgViewUploaded = findViewById(R.id.mImageView);
     }
 
     @Override

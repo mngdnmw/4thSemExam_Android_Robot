@@ -11,7 +11,7 @@ public class Arbitrator
     private boolean _returnWhenInactive;
     public boolean keepRunning = true;
     /**
-     * Monitor is an inner class.  It polls the behavior array to find the behavior of hightst
+     * Monitor is an inner class.  It polls the behavior array to find the behavior of hightest
      * priority.  If higher than the active behavior, it calls active.suppress()
      */
     private Monitor monitor;
