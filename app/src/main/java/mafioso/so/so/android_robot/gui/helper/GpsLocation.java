@@ -14,7 +14,6 @@ public class GpsLocation {
 
     private Context mContext;
     private LocationManager locationManager;
-    private static final String TAG = "GPS";
 
 
     public GpsLocation(Context context) {
@@ -25,11 +24,8 @@ public class GpsLocation {
     public Location lastKnownLocation() {
 
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Has permission, getting location");
             return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
         }
-        Log.d(TAG, "No permission last known");
         return null;
     }
 }

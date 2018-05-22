@@ -1,16 +1,12 @@
 package mafioso.so.so.android_robot.dal;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.location.Location;
-import android.os.AsyncTask;
-
-import com.google.firebase.storage.UploadTask;
 
 import mafioso.so.so.android_robot.shared.Callback;
 
 public class DalFacade {
-    Dao mDao;
+    private Dao mDao;
 
     public DalFacade() {
         mDao = new Dao();

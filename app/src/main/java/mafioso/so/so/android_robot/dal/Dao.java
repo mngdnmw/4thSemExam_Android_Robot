@@ -22,16 +22,14 @@ import mafioso.so.so.android_robot.shared.Callback;
 
 
 public class Dao {
-    FirebaseStorage mStorage;
-    StorageReference mStorageRef, mThisImageRef;
-    UploadTask mUploadTask;
-
-    final static String TAG = "Testing stuff";
+    private FirebaseStorage mStorage;
+    private StorageReference mStorageRef, mThisImageRef;
+    private UploadTask mUploadTask;
+    private final static String TAG = "Testing stuff";
 
     public Dao() {
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference();
-
     }
 
     public boolean uploadImage(Bitmap image, final Location lastKnownLocation, final Callback callback) {
@@ -43,18 +41,17 @@ public class Dao {
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
         mUploadTask = mThisImageRef.putBytes(data);
-        // Register observers to listen for when the download is done or if it fails
-        mUploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                callback.onTaskCompleted(false);
-
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        mUploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 callback.onTaskCompleted(true);
                 updateMetadata(lastKnownLocation);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                callback.onTaskCompleted(false);
+
             }
         });
         return false;
@@ -70,7 +67,7 @@ public class Dao {
                 .addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
                     @Override
                     public void onSuccess(StorageMetadata storageMetadata) {
-                        Log.d(TAG, "Updated meta");
+                        //Handles successful update of matadata
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

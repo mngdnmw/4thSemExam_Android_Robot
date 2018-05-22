@@ -24,12 +24,6 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
 import mafioso.so.so.android_robot.R;
 import mafioso.so.so.android_robot.dal.RobotConnection;
 import mafioso.so.so.android_robot.shared.Circle;
@@ -57,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private BllFacade mBllFac;
 
     //TODO fix for layers ----------------------------------------
-    private RobotConnection robotConnection= new RobotConnection();
+    private RobotConnection robotConnection = new RobotConnection();
     //TODO -------------------------------------------------------
 
     //TODO delete ------------------------------------------------
@@ -65,6 +59,32 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private TextView txtIP;
     private Button btnConnect;
     private ImageView mImgViewUploaded;
+
+    /**
+     * Will delete this once photo is taken
+     */
+
+    protected void setListeners() {
+        btnLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.dwimage);
+
+                if (mGps.lastKnownLocation() != null) {
+
+                    mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
+                        @Override
+                        public void onTaskCompleted(boolean done) {
+                            mImgViewUploaded.setImageBitmap(image);
+
+                        }
+                    });
+
+                }
+            }
+        });
+    }
     //TODO -------------------------------------------------------
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -140,34 +160,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         mImgViewUploaded = findViewById(R.id.mImageView);
     }
-
-
-    /**
-     * Sets up listeners.
-     */
-
-    protected void setListeners() {
-        btnLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                final Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.dwimage);
-
-                if (mGps.lastKnownLocation() != null){
-
-                    mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback(){
-                        @Override
-                        public void onTaskCompleted(boolean done) {
-                            mImgViewUploaded.setImageBitmap(image);
-
-                        }
-                    });
-
-                }
-            }
-        });
-    }
-
 
     @Override
     public void onPause() {
@@ -246,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-            while(!robotConnection.isConnected()){
+            while (!robotConnection.isConnected()) {
                 Thread.yield();
             }
             while (mIsRunning) {
