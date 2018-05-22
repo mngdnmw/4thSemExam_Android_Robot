@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 
 import mafioso.so.so.android_robot.R;
 import mafioso.so.so.android_robot.be.Circle;
+import mafioso.so.so.android_robot.dal.Dao;
 import mafioso.so.so.android_robot.gui.helper.GpsLocation;
 import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private boolean mIsRunning;
 
     private static long THREAD_SLEEP = 500;
+    private Context mContext;
 
     private boolean connected = false;
     private TextView txtIP;
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mContext = this;
         getPermissions();
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -144,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
+//                Log.d(TAG, "Current Loc " + mGps.lastKnownLocation().getLatitude() + " " + mGps.lastKnownLocation().getLongitude());
+                new Dao().uploadImage(mContext);
             }
         });
     }
