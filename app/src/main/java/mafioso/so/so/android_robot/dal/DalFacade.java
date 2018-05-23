@@ -7,12 +7,17 @@ import mafioso.so.so.android_robot.shared.Callback;
 
 public class DalFacade {
     private Dao mDao;
-
+    private RobotConnection mRobotCon;
     public DalFacade() {
         mDao = new Dao();
+        mRobotCon = new RobotConnection();
     }
 
-    public boolean uploadImage(Bitmap image, Location lastKnownLocation, final Callback callback) {
-        return mDao.uploadImage(image,lastKnownLocation, callback);
+    public Dao getmDao() {
+        return mDao;
+    }
+
+    public RobotConnection getmRobotCon() {
+        return mRobotCon;
     }
 }

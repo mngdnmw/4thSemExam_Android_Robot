@@ -1,13 +1,11 @@
 package mafioso.so.so.android_robot.bll;
 
-import android.support.design.widget.CoordinatorLayout;
 import android.util.Log;
 
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 import mafioso.so.so.android_robot.shared.Circle;
-import mafioso.so.so.android_robot.bll.Behaviours.RoamBehaviour;
-import mafioso.so.so.android_robot.dal.RobotConnection;
 
 public class DecisionMaker {
 
@@ -16,9 +14,11 @@ public class DecisionMaker {
     private double crntDiameter, lastDiameter;
     private static Point NO_POINT = new Point(-1,-1);
     private static double NO_DIAMETER = -1.0;
-
+    private Mat currentFrame;
     private int width, height;
     private int range;
+    private GpsLocation mGps;
+    private
     Arbitrator arb;
     public enum Command {
         QUIT, OBJECT_FOUND, TAKE_PICTURE, CHANGEDIR, ROAM, STOP, FORWARD, LEFT, RIGHT, BACK, WAIT, DO_NOTHING
@@ -26,7 +26,7 @@ public class DecisionMaker {
     private Command lastCommand;
     public Command command;
 
-    public DecisionMaker(int width, int height, RobotConnection robotConnection) {
+    public DecisionMaker(int width, int height) {
         this.width = width;
         this.height = height;
         crntDiameter = NO_DIAMETER;
@@ -40,10 +40,15 @@ public class DecisionMaker {
 
     }
 
-    public void MakeDecision(Circle circle){
+    public Mat getCurrentFrame() {
+        return currentFrame;
+    }
+
+    public void MakeDecision(Circle circle, Mat currentFrame){
         lastPoint = crntPoint;
         lastDiameter = crntDiameter;
         lastCommand = command;
+        this.currentFrame = currentFrame;
 
         //No circle found in picture.
         if(circle == null){

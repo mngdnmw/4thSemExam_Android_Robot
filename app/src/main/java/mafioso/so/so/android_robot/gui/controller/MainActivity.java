@@ -22,11 +22,10 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import mafioso.so.so.android_robot.R;
-import mafioso.so.so.android_robot.dal.RobotConnection;
 import mafioso.so.so.android_robot.shared.Circle;
 import mafioso.so.so.android_robot.bll.BllFacade;
-import mafioso.so.so.android_robot.gui.helper.GpsLocation;
-import mafioso.so.so.android_robot.gui.helper.ImgProcessing;
+import mafioso.so.so.android_robot.bll.GpsLocation;
+import mafioso.so.so.android_robot.bll.ImgProcessing;
 import mafioso.so.so.android_robot.shared.Callback;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
@@ -45,13 +44,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private Mat mDistance;
     private BaseLoaderCallback mLoaderCallback;
     private CameraBridgeViewBase mOpenCvCameraView;
-    private GpsLocation mGps;
     private BllFacade mBllFac;
 
-    //TODO fix for layers ----------------------------------------
-    private RobotConnection robotConnection = new RobotConnection();
-
-    //TODO delete ------------------------------------------------
     private TextView mTxtIP;
     private Button mBtnConnect;
 
@@ -95,8 +89,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private void setupMemberVariables() {
         mIsRunning = true;
-        mBllFac = new BllFacade();
-        mGps = new GpsLocation(this);
+        mBllFac = new BllFacade(this);
+
 
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -184,8 +178,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             @Override
             public void onClick(View v) {
                 //TODO fix this so it fits the layers
-               mBllFac.getRobotConnection().threadConnection(mTxtIP.getText().toString());
+             /*
+                mBllFac.getmDalFac().getmDao().uploadImage(
+                        mBllFac.getImgProcessing().convertMatToBitmap(mRgba),
+                        mBllFac.getGpsLocation().lastKnownLocation(),   new Callback() {
+                            @Override
+                            public void onTaskCompleted(boolean done) {
+                                //TODO something with the GUI to notify image has been uploaded
+                            }
+                        });
+                  */
+
+               mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
                 new Thread(new ImgProcessingRunnable()).start();
+
+
+
             }
         });
 
@@ -197,12 +205,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-           while (!mBllFac.getRobotConnection().isConnected()) {
+           while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
                 Thread.yield();
             }
             while (mIsRunning) {
-                Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
-                mBllFac.getDecisionMaker().MakeDecision(circle);
+               Mat currentFrame;
+               currentFrame = mRgba;
+                Circle circle = imgProc.getCircle(currentFrame, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+                mBllFac.getDecisionMaker().MakeDecision(circle, currentFrame);
+
                 if (circle != null) {
                     Log.d(TAG, "diameter " + Double.toString(circle.getDiameter()));
                     Log.d(TAG, "center " + circle.getCenter().toString());
@@ -217,20 +228,4 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
-    protected void uploadImage(final Bitmap image) {
-
-        if (mGps.lastKnownLocation() != null) {
-
-            mBllFac.getmDalFac().uploadImage(image, mGps.lastKnownLocation(), new Callback() {
-                @Override
-                public void onTaskCompleted(boolean done) {
-                    //TODO something with the GUI to notify image has been uploaded
-
-                }
-            });
-        } else {
-            Log.i("Error", "No location found, cannot upload image");
-        }
-
-    }
 }

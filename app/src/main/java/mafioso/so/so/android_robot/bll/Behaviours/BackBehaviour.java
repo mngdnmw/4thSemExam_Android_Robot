@@ -1,19 +1,21 @@
 package mafioso.so.so.android_robot.bll.Behaviours;
 
+import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.bll.DecisionMaker;
 import mafioso.so.so.android_robot.bll.IBehaviour;
 import mafioso.so.so.android_robot.dal.RobotConnection;
 
 public class BackBehaviour implements IBehaviour {
     private boolean suppressed;
-    private RobotConnection robotConnection;
-    private DecisionMaker decMaker;
-    public BackBehaviour(RobotConnection robotConnection,DecisionMaker decMaker){
+    private BllFacade bllFacade;
+    public BackBehaviour(BllFacade bllFacade)
+    {
+        this.bllFacade = bllFacade;
         suppressed = false;
     }
     @Override
     public boolean takeControl() {
-        if(decMaker.command == DecisionMaker.Command.BACK) {
+        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.BACK) {
             return true;
         }
         return false;
@@ -21,7 +23,7 @@ public class BackBehaviour implements IBehaviour {
 
     @Override
     public void action() {
-        robotConnection.sendCommand(DecisionMaker.getStringCommand(DecisionMaker.Command.BACK));
+        bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(DecisionMaker.Command.BACK));
         while(!suppressed){
             Thread.yield();
         }

@@ -1,4 +1,4 @@
-package mafioso.so.so.android_robot.gui.helper;
+package mafioso.so.so.android_robot.bll;
 
 
 import android.Manifest;

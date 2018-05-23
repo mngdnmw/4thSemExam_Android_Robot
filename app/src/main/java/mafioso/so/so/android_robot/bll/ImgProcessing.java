@@ -1,6 +1,11 @@
-package mafioso.so.so.android_robot.gui.helper;
+package mafioso.so.so.android_robot.bll;
 
+import android.graphics.Bitmap;
+import android.util.Log;
+
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -92,5 +97,16 @@ public class ImgProcessing {
         circles.release();
 
         return null;
+    }
+    public Bitmap convertMatToBitmap(Mat img){
+        Bitmap bmp = null;
+        try {
+            bmp = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(img, bmp);
+        }
+        catch (CvException e){
+            Log.d("Exception",e.getMessage());
+        }
+        return bmp;
     }
 }
