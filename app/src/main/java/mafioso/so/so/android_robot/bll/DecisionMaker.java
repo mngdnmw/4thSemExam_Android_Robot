@@ -136,6 +136,8 @@ public class DecisionMaker {
                 return "Left";
             case BACK:
                 return "Back";
+            case RIGHT:
+                return "Right";
             default:
                 return "";
         }
