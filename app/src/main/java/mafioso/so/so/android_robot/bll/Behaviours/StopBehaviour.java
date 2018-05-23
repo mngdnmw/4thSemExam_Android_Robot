@@ -4,25 +4,24 @@ import mafioso.so.so.android_robot.bll.DecisionMaker;
 import mafioso.so.so.android_robot.bll.IBehaviour;
 import mafioso.so.so.android_robot.dal.RobotConnection;
 
-public class RoamBehaviour implements IBehaviour {
+public class StopBehaviour implements IBehaviour {
     private boolean suppressed;
     private RobotConnection robotConnection;
     private DecisionMaker decMaker;
-    public RoamBehaviour(RobotConnection robotConnection,DecisionMaker decMaker){
+    public StopBehaviour(RobotConnection robotConnection,DecisionMaker decMaker){
         suppressed = false;
     }
     @Override
     public boolean takeControl() {
-        if(decMaker.command == DecisionMaker.Command.ROAM) {
+        if(decMaker.command == DecisionMaker.Command.STOP) {
             return true;
         }
-
         return false;
     }
 
     @Override
     public void action() {
-        robotConnection.sendCommand(DecisionMaker.getStringCommand(DecisionMaker.Command.ROAM));
+        robotConnection.sendCommand(DecisionMaker.getStringCommand(DecisionMaker.Command.STOP));
         while(!suppressed){
             Thread.yield();
         }
