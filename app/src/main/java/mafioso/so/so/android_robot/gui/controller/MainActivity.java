@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mDistance = new Mat(height, width, CvType.CV_8UC1);
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
+        mBllFac.setDecisionMaker(width,height);
 
     }
 
@@ -183,8 +184,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             @Override
             public void onClick(View v) {
                 //TODO fix this so it fits the layers
-                robotConnection.threadConnection(mTxtIP.getText().toString());
-                //new Thread(new ImgProcessingRunnable()).start();
+               mBllFac.getRobotConnection().threadConnection(mTxtIP.getText().toString());
+                new Thread(new ImgProcessingRunnable()).start();
             }
         });
 
@@ -196,12 +197,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-            while (!robotConnection.isConnected()) {
+           /* while (!robotConnection.isConnected()) {
                 Thread.yield();
-            }
+            }*/
             while (mIsRunning) {
                 Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
-
+                mBllFac.getDecisionMaker().MakeDecision(circle);
                 if (circle != null) {
                     Log.d(TAG, "diameter " + Double.toString(circle.getDiameter()));
                     Log.d(TAG, "center " + circle.getCenter().toString());
@@ -220,14 +221,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         if (mGps.lastKnownLocation() != null) {
 
-            mBllFac.uploadImage(image, mGps.lastKnownLocation(), new Callback() {
+            mBllFac.getmDalFac().uploadImage(image, mGps.lastKnownLocation(), new Callback() {
                 @Override
                 public void onTaskCompleted(boolean done) {
                     //TODO something with the GUI to notify image has been uploaded
 
                 }
             });
-
         } else {
             Log.i("Error", "No location found, cannot upload image");
         }

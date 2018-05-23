@@ -16,6 +16,7 @@ public class RoamBehaviour implements IBehaviour {
         if(decMaker.command == DecisionMaker.Command.ROAM) {
             return true;
         }
+
         return false;
     }
 

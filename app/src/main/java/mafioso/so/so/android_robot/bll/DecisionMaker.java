@@ -11,6 +11,7 @@ import mafioso.so.so.android_robot.dal.RobotConnection;
 
 public class DecisionMaker {
 
+    private static String TAG = "AAR - DecisionMaker";
     private Point crntPoint, lastPoint;
     private double crntDiameter, lastDiameter;
     private static Point NO_POINT = new Point(-1,-1);
@@ -25,7 +26,7 @@ public class DecisionMaker {
     private Command lastCommand;
     public Command command;
 
-    public DecisionMaker(int width, int height) {
+    public DecisionMaker(int width, int height, RobotConnection robotConnection) {
         this.width = width;
         this.height = height;
         crntDiameter = NO_DIAMETER;
@@ -36,7 +37,6 @@ public class DecisionMaker {
         else{
             range = this.width/20;
         }
-
 
     }
 
@@ -52,18 +52,32 @@ public class DecisionMaker {
             //if there was no circle last picture, we once again continue to roam
             if(lastPoint == crntPoint && lastDiameter == crntDiameter){
                 command = Command.ROAM;
+
+                Log.d(TAG, "MakeDecision: Right Roam");
             }
             //if there was an object with last decision, we will check what the last command was.
             //if it was going left we assume the object has left the frame since then and we would like to find it again
             else if(lastCommand == Command.LEFT){
                 command = Command.RIGHT;
+
+                Log.d(TAG, "MakeDecision: Right ");
             }
             else if (lastCommand == Command.RIGHT){
                 command = Command.LEFT;
+                Log.d(TAG, "MakeDecision: Left ");
+            } else if (lastCommand == Command.BACK){
+                Log.d(TAG, "MakeDecision: Forward ");
+                command = Command.FORWARD;
+            }else if (lastCommand == Command.FORWARD){
+                Log.d(TAG, "MakeDecision: Back ");
+                command = Command.BACK;
             }
+
             //stop to test if it camerashake
             else{
                 command = Command.STOP;
+
+                Log.d(TAG, "MakeDecision: Stop ");
             }
         }
         //Circle found.
@@ -73,9 +87,15 @@ public class DecisionMaker {
          if(lastPoint == NO_POINT && lastDiameter == NO_DIAMETER){
              command = Command.STOP;
          }
-         if( pointRangeCheck(lastPoint, crntPoint)){
+         else if( pointRangeCheck(lastPoint, crntPoint)){
              if(crntPoint.x <= ((width/2)-(range*2))){
                  command = Command.LEFT;
+
+                 Log.d(TAG, "MakeDecision: Left " + crntPoint.x);
+             }
+             else if(crntPoint.x >= ((width/2)+(range*2))){
+                 command = Command.RIGHT;
+                 Log.d(TAG, "MakeDecision: Right " + crntPoint.x);
              }
          }
         
