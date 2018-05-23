@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     protected void getPermissions() {
         int allPermissions = 1;
-        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
+        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET};
         if (!hasPermissions(this, permissions)) {
             ActivityCompat.requestPermissions(this, permissions, allPermissions);
         }
