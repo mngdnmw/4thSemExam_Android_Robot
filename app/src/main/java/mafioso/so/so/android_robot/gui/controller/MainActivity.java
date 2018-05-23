@@ -197,9 +197,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-           /* while (!robotConnection.isConnected()) {
+           while (!mBllFac.getRobotConnection().isConnected()) {
                 Thread.yield();
-            }*/
+            }
             while (mIsRunning) {
                 Circle circle = imgProc.getCircle(mRgba, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
                 mBllFac.getDecisionMaker().MakeDecision(circle);
