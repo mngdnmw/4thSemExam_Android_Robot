@@ -4,5 +4,4 @@ import org.opencv.core.Mat;
 
 public class PhotoHelper {
     Mat photo;
-
 }
