@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -17,50 +19,82 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import mafioso.so.so.android_robot.shared.Callback;
 
 
 public class Dao {
+    private FirebaseFirestore mDb;
     private FirebaseStorage mStorage;
     private StorageReference mStorageRef, mThisImageRef;
     private UploadTask mUploadTask;
     private final static String TAG = "Testing stuff";
 
     public Dao() {
+        mDb = FirebaseFirestore.getInstance();
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference();
     }
 
     public boolean uploadImage(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
-                Date currentTime = Calendar.getInstance().getTime();
-                mThisImageRef = mStorageRef.child("/images/" + currentTime.toString() + ".jpg");
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] data = baos.toByteArray();
-                mUploadTask = mThisImageRef.putBytes(data);
-                mUploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        callback.onTaskCompleted(true);
-                        updateMetadata(lastKnownLocation);
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        callback.onTaskCompleted(false);
-
-                    }
-                });
+                createDocumentInFirestore(image, lastKnownLocation, callback);
             }
-
 
         }.start();
         return false;
+    }
+
+    private void createDocumentInFirestore(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
+        Date currentTime = Calendar.getInstance().getTime();
+        // Create a new imageDoc
+        Map<String, Object> imageDoc = new HashMap<>();
+        imageDoc.put("latitude", Double.toString(lastKnownLocation.getLatitude()));
+        imageDoc.put("longitude", Double.toString(lastKnownLocation.getLongitude()));
+        imageDoc.put("timeStamp", currentTime);
+
+        // Add a new document with a generated ID
+        mDb.collection("pictures")
+                .add(imageDoc)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        createFileInStorage(image, callback, documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+
+    }
+
+    private void createFileInStorage(Bitmap image, final Callback callback, String uid) {
+        mThisImageRef = mStorageRef.child("/images/" + uid + ".jpg");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+        mUploadTask = mThisImageRef.putBytes(data);
+        mUploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                callback.onTaskCompleted(true);
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                callback.onTaskCompleted(false);
+            }
+        });
+
     }
 
     private void updateMetadata(Location lastKnownLocation) {
