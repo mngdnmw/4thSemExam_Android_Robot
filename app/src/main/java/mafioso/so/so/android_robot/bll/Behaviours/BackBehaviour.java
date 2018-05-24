@@ -16,6 +16,7 @@ public class BackBehaviour implements IBehaviour {
     @Override
     public boolean takeControl() {
         if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.BACK) {
+            bllFacade.getDebugger().setDebug("Back");
             return true;
         }
         return false;

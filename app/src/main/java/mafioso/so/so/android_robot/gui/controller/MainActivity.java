@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -22,6 +23,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import mafioso.so.so.android_robot.R;
+import mafioso.so.so.android_robot.bll.DebugLogger;
+import mafioso.so.so.android_robot.bll.PhotoUploadedNotifier;
 import mafioso.so.so.android_robot.shared.Circle;
 import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.bll.GpsLocation;
@@ -90,7 +93,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private void setupMemberVariables() {
         mIsRunning = true;
         mBllFac = new BllFacade(this);
+        mBllFac.getPhotoUploadedNotifier().setListener(new PhotoUploadedNotifier.ChangeListener() {
+            @Override
+            public void onChange() {
+                if (mBllFac.getPhotoUploadedNotifier().isUploaded()) {
+                    Toast.makeText(MainActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+                    mBllFac.getPhotoUploadedNotifier().setUploaded(false);
+                }
 
+            }
+        });
+        mBllFac.getDebugger().setListener(new DebugLogger.ChangeListener() {
+            @Override
+            public void onChange() {
+                Log.d("DecisionMaker", "onChange: " + mBllFac.getDebugger().getDebug());
+
+            }});
 
         mOpenCvCameraView = findViewById(R.id.javaCameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -152,7 +170,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mDistance = new Mat(height, width, CvType.CV_8UC1);
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
-        mBllFac.setDecisionMaker(width,height);
+        mBllFac.setDecisionMaker(width, height);
+        mBllFac.startAbitrator();
 
     }
 
@@ -163,10 +182,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mIntermediateMat.release();
         mIsRunning = false;
     }
-
+    boolean picturesnap = true;
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
+        if(picturesnap){
+        mBllFac.getmDalFac().getmDao().uploadImage(
+                mBllFac.getImgProcessing().convertMatToBitmap(mRgba),
+                mBllFac.getGpsLocation().lastKnownLocation(),
+                new Callback());
+        picturesnap = false;
+        }
         return mRgba;
     }
 
@@ -189,9 +215,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         });
                   */
 
-               mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
+                mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
                 new Thread(new ImgProcessingRunnable()).start();
-
 
 
             }
@@ -205,12 +230,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-           while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
+            while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
                 Thread.yield();
             }
             while (mIsRunning) {
-               Mat currentFrame;
-               currentFrame = mRgba;
+                Mat currentFrame;
+                currentFrame = mRgba;
                 Circle circle = imgProc.getCircle(currentFrame, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
                 mBllFac.getDecisionMaker().MakeDecision(circle, currentFrame);
 

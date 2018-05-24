@@ -20,17 +20,20 @@ public class BllFacade {
     private ImgProcessing imgProcessing;
     private GpsLocation gpsLocation;
     private Arbitrator arb;
+    private PhotoUploadedNotifier photoUploadedNotifier;
+    private DebugLogger debugger;
 
     public BllFacade(Context context) {
         mDalFac = new DalFacade();
         imgProcessing = new ImgProcessing();
         gpsLocation = new GpsLocation(context);
+        photoUploadedNotifier = new PhotoUploadedNotifier();
+        debugger = new DebugLogger();
         initializeArbitrator();
     }
 
-    private void initializeArbitrator(){
+    private void initializeArbitrator(){/*
         IBehaviour roam = new RoamBehaviour(this);
-
         IBehaviour back = new BackBehaviour(this);
         IBehaviour changeDir = new ChangeDirectionBehaviour(this);
         IBehaviour forward = new ForwardBehaviour(this);
@@ -39,19 +42,27 @@ public class BllFacade {
         IBehaviour stop = new StopBehaviour(this);
         IBehaviour takePicture = new TakePictureBehaviour(this);
         IBehaviour quit = new QuitBehaviour(this);
-        IBehaviour[] behaviours = {takePicture};
-        arb = new Arbitrator(behaviours);
+        IBehaviour[] behaviours = {stop, right,left,forward,changeDir,back,roam,takePicture,quit};
+        arb = new Arbitrator(behaviours);*/
     }
     public GpsLocation getGpsLocation() {
         return gpsLocation;
+    }
+
+    public DebugLogger getDebugger() {
+        return debugger;
     }
 
     public ImgProcessing getImgProcessing() {
         return imgProcessing;
     }
 
+    public PhotoUploadedNotifier getPhotoUploadedNotifier() {
+        return photoUploadedNotifier;
+    }
+
     public void setDecisionMaker(int width, int height) {
-        this.decisionMaker = new DecisionMaker(width, height);
+        this.decisionMaker = new DecisionMaker(width, height, this);
     }
 
     public DecisionMaker getDecisionMaker() {
@@ -64,14 +75,14 @@ public class BllFacade {
 
 
     public void startAbitrator(){
-        threadArbitrator(arb);
+        //threadArbitrator(arb);
     }
     private void threadArbitrator(final Arbitrator arbitrator) {
         new Thread() {
             public void run() {
                 arbitrator.go();
             }
-        }.run();
+        }.start();
 
     }
 }

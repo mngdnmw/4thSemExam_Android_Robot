@@ -3,8 +3,6 @@ package mafioso.so.so.android_robot.bll.Behaviours;
 import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.bll.DecisionMaker;
 import mafioso.so.so.android_robot.bll.IBehaviour;
-import mafioso.so.so.android_robot.dal.Dao;
-import mafioso.so.so.android_robot.dal.RobotConnection;
 import mafioso.so.so.android_robot.shared.Callback;
 
 public class TakePictureBehaviour implements IBehaviour {
@@ -20,6 +18,7 @@ public class TakePictureBehaviour implements IBehaviour {
     @Override
     public boolean takeControl() {
         if (bllFacade.getDecisionMaker().command == DecisionMaker.Command.TAKE_PICTURE) {
+            bllFacade.getDecisionMaker().command= DecisionMaker.Command.DO_NOTHING;
             return true;
         }
         return false;
@@ -35,7 +34,7 @@ public class TakePictureBehaviour implements IBehaviour {
                 new Callback() {
             @Override
             public void onTaskCompleted(boolean done) {
-                //TODO something with the GUI to notify image has been uploaded
+                bllFacade.getPhotoUploadedNotifier().setUploaded(true);
             }
         });
         while(!suppressed){

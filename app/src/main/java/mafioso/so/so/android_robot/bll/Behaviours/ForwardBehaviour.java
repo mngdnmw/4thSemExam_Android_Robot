@@ -16,6 +16,8 @@ public class ForwardBehaviour implements IBehaviour {
     @Override
     public boolean takeControl() {
         if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.FORWARD) {
+
+            bllFacade.getDebugger().setDebug("Forward");
             return true;
         }
         return false;

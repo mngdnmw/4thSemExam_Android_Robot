@@ -8,24 +8,23 @@ import java.net.UnknownHostException;
 
 public class RobotConnection {
 
-private Socket socket;
-private DataOutputStream dos;
-private DataInputStream dis;
+    private Socket socket;
+    private DataOutputStream dos;
+    private DataInputStream dis;
 
 
-    public void threadConnection(final String host){
+    public void threadConnection(final String host) {
         new Thread() {
             public void run() {
                 try {
-                        socket = new Socket(host, 5969);
-                        socket.setKeepAlive(true);
+                    socket = new Socket(host, 5969);
+                    socket.setKeepAlive(true);
 
-                        dis = new DataInputStream(socket.getInputStream());
-                        dos = new DataOutputStream(socket.getOutputStream());
+                    dis = new DataInputStream(socket.getInputStream());
+                    dos = new DataOutputStream(socket.getOutputStream());
 
 
-                }
-                catch (UnknownHostException e) {
+                } catch (UnknownHostException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -34,7 +33,9 @@ private DataInputStream dis;
             }
         }.start();
     }
-        public void sendCommand(final String command) {
+
+    public void sendCommand(final String command) {
+        if (isConnected()) {
             new Thread() {
                 public void run() {
                     try {
@@ -49,14 +50,15 @@ private DataInputStream dis;
                 }
             }.start();
         }
-        public boolean isConnected(){
-            if(socket ==null){
-                return false;
-            }
-            else    {
+    }
+
+    public boolean isConnected() {
+        if (socket == null) {
+            return false;
+        } else {
             return socket.isConnected();
-            }
         }
+    }
 
     public DataInputStream getDis() {
         return dis;

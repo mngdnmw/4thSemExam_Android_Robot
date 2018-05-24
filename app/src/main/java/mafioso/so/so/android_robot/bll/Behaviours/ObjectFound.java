@@ -3,21 +3,18 @@ package mafioso.so.so.android_robot.bll.Behaviours;
 import mafioso.so.so.android_robot.bll.BllFacade;
 import mafioso.so.so.android_robot.bll.DecisionMaker;
 import mafioso.so.so.android_robot.bll.IBehaviour;
-import mafioso.so.so.android_robot.dal.RobotConnection;
 
-public class LeftBehaviour implements IBehaviour {
+public class ObjectFound implements IBehaviour {
     private boolean suppressed;
     private BllFacade bllFacade;
-    public LeftBehaviour(BllFacade bllFacade)
+    public ObjectFound(BllFacade bllFacade)
     {
         this.bllFacade = bllFacade;
         suppressed = false;
     }
     @Override
     public boolean takeControl() {
-        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.LEFT) {
-
-            bllFacade.getDebugger().setDebug("Left");
+        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.OBJECT_FOUND) {
             return true;
         }
         return false;
@@ -25,7 +22,7 @@ public class LeftBehaviour implements IBehaviour {
 
     @Override
     public void action() {
-        bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(DecisionMaker.Command.LEFT)));
+        bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(DecisionMaker.Command.STOP)));
         while(!suppressed){
             Thread.yield();
         }

@@ -5,6 +5,7 @@ import android.util.Log;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
+import mafioso.so.so.android_robot.shared.Callback;
 import mafioso.so.so.android_robot.shared.Circle;
 
 public class DecisionMaker {
@@ -12,7 +13,7 @@ public class DecisionMaker {
     private static String TAG = "AAR - DecisionMaker";
     private Point crntPoint, lastPoint;
     private double crntDiameter, lastDiameter;
-    private static Point NO_POINT = new Point(-1,-1);
+    private static Point NO_POINT = new Point(-1, -1);
     private static double NO_DIAMETER = -1.0;
     private Mat currentFrame;
     private int width, height;
@@ -20,22 +21,26 @@ public class DecisionMaker {
     private GpsLocation mGps;
     private
     Arbitrator arb;
+
     public enum Command {
         QUIT, OBJECT_FOUND, TAKE_PICTURE, CHANGEDIR, ROAM, STOP, FORWARD, LEFT, RIGHT, BACK, WAIT, DO_NOTHING
     }
+
     private Command lastCommand;
     public Command command;
-
-    public DecisionMaker(int width, int height) {
+    private BllFacade bllFadace;
+    public DecisionMaker(int width, int height, BllFacade bllFacade) {
+        command = Command.DO_NOTHING;
         this.width = width;
         this.height = height;
         crntDiameter = NO_DIAMETER;
         crntPoint = NO_POINT;
-        if(this.width <= this.height){
-            range = this.height/20;
-        }
-        else{
-            range = this.width/20;
+        this.bllFadace = bllFacade;
+        Actions actions = new Actions(bllFacade);
+        if (this.width <= this.height) {
+            range = this.height / 8;
+        } else {
+            range = this.width / 8;
         }
 
     }
@@ -44,55 +49,62 @@ public class DecisionMaker {
         return currentFrame;
     }
 
-    public void MakeDecision(Circle circle, Mat currentFrame){
+    public void MakeDecision(Circle circle, Mat currentFrame) {
         lastPoint = crntPoint;
         lastDiameter = crntDiameter;
         lastCommand = command;
         this.currentFrame = currentFrame;
 
         //No circle found in picture.
-        if(circle == null){
+        if (circle != null) {
+            crntPoint = circle.getCenter();
+            crntDiameter = circle.getDiameter();
+            if (lastPoint == NO_POINT && lastDiameter == NO_DIAMETER) {
+                command = Command.STOP;
+            } else if (crntPoint.x <= ((width / 2) - (range * 2))) {
+
+                command = Command.LEFT;
+            } else if (crntPoint.x >= ((width / 2) + (range * 2))) {
+
+                command = Command.RIGHT;
+            } else if (lastCommand == Command.OBJECT_FOUND) {
+
+                command = Command.TAKE_PICTURE;
+            } else if (lastCommand == Command.TAKE_PICTURE) {
+
+                command = Command.CHANGEDIR;
+            } else {
+                command = Command.OBJECT_FOUND;
+            }
+        }
+        //Circle not found.
+        else {
+
+            // if( pointRangeCheck(lastPoint, crntPoint))
             crntPoint = NO_POINT;
             crntDiameter = NO_DIAMETER;
             //if there was no circle last picture, we once again continue to roam
-            if(lastPoint == crntPoint && lastDiameter == crntDiameter){
+            if (lastPoint == crntPoint && lastDiameter == crntDiameter) {
                 command = Command.ROAM;
-
-                Log.d(TAG, "MakeDecision: Right Roam");
             }
             //if there was an object with last decision, we will check what the last command was.
             //if it was going left we assume the object has left the frame since then and we would like to find it again
-            else if(lastCommand == Command.LEFT){
+            else if (lastCommand == Command.LEFT) {
                 command = Command.RIGHT;
-
-                Log.d(TAG, "MakeDecision: Right ");
-            }
-            else if (lastCommand == Command.RIGHT){
+            } else if (lastCommand == Command.RIGHT) {
                 command = Command.LEFT;
-                Log.d(TAG, "MakeDecision: Left ");
-            } else if (lastCommand == Command.BACK){
-                Log.d(TAG, "MakeDecision: Forward ");
+            } else if (lastCommand == Command.BACK) {
                 command = Command.FORWARD;
-            }else if (lastCommand == Command.FORWARD){
-                Log.d(TAG, "MakeDecision: Back ");
+            } else if (lastCommand == Command.FORWARD) {
                 command = Command.BACK;
             }
-
-            //stop to test if it camerashake
             else{
-                command = Command.STOP;
-
-                Log.d(TAG, "MakeDecision: Stop ");
+                command = Command.ROAM;
             }
+
         }
-        //Circle found.
-        else{
-            crntPoint = circle.getCenter();
-            crntDiameter = circle.getDiameter();
-         if(lastPoint == NO_POINT && lastDiameter == NO_DIAMETER){
-             command = Command.STOP;
-         }
-         else if( pointRangeCheck(lastPoint, crntPoint)){
+         /*
+         else{
              if(crntPoint.x <= ((width/2)-(range*2))){
                  command = Command.LEFT;
 
@@ -102,22 +114,18 @@ public class DecisionMaker {
                  command = Command.RIGHT;
                  Log.d(TAG, "MakeDecision: Right " + crntPoint.x);
              }
-         }
-        
-        }
-
+         }*/
 
     }
+
 
     private boolean pointRangeCheck(Point lastPoint, Point crntPoint) {
-    if((lastPoint.x>= crntPoint.x-range && lastPoint.x<= crntPoint.x+range)
-            && (lastPoint.y>= crntPoint.y-range && lastPoint.y<= crntPoint.y+range))
-    {
-        return true;
-    }
-    else{
-        return false;
-    }
+        if ((lastPoint.x >= crntPoint.x - range && lastPoint.x <= crntPoint.x + range)
+                && (lastPoint.y >= crntPoint.y - range && lastPoint.y <= crntPoint.y + range)) {
+            return true;
+        } else {
+            return false;
+        }
     }
     /*
      * Behaviors: Quit, SonicAvoidance (Done), Change Direction, Roam Stop Forward
@@ -150,6 +158,53 @@ public class DecisionMaker {
 
     public Command getCommand() {
         return command;
+    }
+
+    private class Actions{
+        BllFacade bllFacade;
+        private Actions(BllFacade bllFacade){
+        this.bllFacade = bllFacade;
+        }
+        protected void back(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.BACK));
+        }
+        protected void changeDirection(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.CHANGEDIR));
+        }
+        protected void forward(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.FORWARD));
+        }
+        protected void left(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.LEFT));
+        }
+        protected void objectFound(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.STOP));
+        }
+        protected void quit(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.QUIT));
+        }
+        protected void right(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.RIGHT));
+        }
+        protected void roam(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.ROAM));
+        }
+        protected void stop(){
+            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.STOP));
+        }
+        protected void takePicture(){ bllFacade.getmDalFac().getmDao().uploadImage(
+                bllFacade.getImgProcessing().convertMatToBitmap(
+                        bllFacade.getDecisionMaker().getCurrentFrame()),
+                bllFacade.getGpsLocation().lastKnownLocation(),
+                new Callback() {
+                    @Override
+                    public void onTaskCompleted(boolean done) {
+                        bllFacade.getPhotoUploadedNotifier().setUploaded(true);
+                    }
+                });
+        }
+
+
     }
 
 

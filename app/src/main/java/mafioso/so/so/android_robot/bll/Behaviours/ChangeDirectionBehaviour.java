@@ -16,6 +16,7 @@ public class ChangeDirectionBehaviour implements IBehaviour {
     @Override
     public boolean takeControl() {
         if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.CHANGEDIR) {
+            bllFacade.getDebugger().setDebug("ChangeDirection");
             return true;
         }
         return false;

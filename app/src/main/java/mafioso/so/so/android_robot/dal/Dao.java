@@ -32,28 +32,34 @@ public class Dao {
         mStorageRef = mStorage.getReference();
     }
 
-    public boolean uploadImage(Bitmap image, final Location lastKnownLocation, final Callback callback) {
-
-        Date currentTime = Calendar.getInstance().getTime();
-        mThisImageRef = mStorageRef.child("/images/" + currentTime.toString() + ".jpg");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
-        mUploadTask = mThisImageRef.putBytes(data);
-        mUploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+    public boolean uploadImage(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
+        new Thread(){
             @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                callback.onTaskCompleted(true);
-                updateMetadata(lastKnownLocation);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                callback.onTaskCompleted(false);
+            public void run() {
+                Date currentTime = Calendar.getInstance().getTime();
+                mThisImageRef = mStorageRef.child("/images/" + currentTime.toString() + ".jpg");
 
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data = baos.toByteArray();
+                mUploadTask = mThisImageRef.putBytes(data);
+                mUploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        callback.onTaskCompleted(true);
+                        updateMetadata(lastKnownLocation);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        callback.onTaskCompleted(false);
+
+                    }
+                });
             }
-        });
+
+
+        }.start();
         return false;
     }
 
