@@ -53,8 +53,8 @@ public class Dao {
         Date currentTime = Calendar.getInstance().getTime();
         // Create a new imageDoc
         Map<String, Object> imageDoc = new HashMap<>();
-        imageDoc.put("latitude", Double.toString(lastKnownLocation.getLatitude()));
-        imageDoc.put("longitude", Double.toString(lastKnownLocation.getLongitude()));
+        imageDoc.put("latitude", lastKnownLocation.getLatitude());
+        imageDoc.put("longitude", lastKnownLocation.getLongitude());
         imageDoc.put("timeStamp", currentTime);
 
         // Add a new document with a generated ID
@@ -97,24 +97,24 @@ public class Dao {
 
     }
 
-    private void updateMetadata(Location lastKnownLocation) {
-        StorageMetadata metadata = new StorageMetadata.Builder()
-                .setCustomMetadata("Latitude", Double.toString(lastKnownLocation.getLatitude()))
-                .setCustomMetadata("Longitude", Double.toString(lastKnownLocation.getLongitude()))
-                .build();
-
-        mThisImageRef.updateMetadata(metadata)
-                .addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
-                    @Override
-                    public void onSuccess(StorageMetadata storageMetadata) {
-                        //Handles successful update of matadata
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.d(TAG, exception.toString());
-                    }
-                });
-    }
+//    private void updateMetadata(Location lastKnownLocation) {
+//        StorageMetadata metadata = new StorageMetadata.Builder()
+//                .setCustomMetadata("Latitude", Double.toString(lastKnownLocation.getLatitude()))
+//                .setCustomMetadata("Longitude", Double.toString(lastKnownLocation.getLongitude()))
+//                .build();
+//
+//        mThisImageRef.updateMetadata(metadata)
+//                .addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
+//                    @Override
+//                    public void onSuccess(StorageMetadata storageMetadata) {
+//                        //Handles successful update of matadata
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception exception) {
+//                        Log.d(TAG, exception.toString());
+//                    }
+//                });
+//    }
 }
