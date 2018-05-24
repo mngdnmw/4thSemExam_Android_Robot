@@ -17,6 +17,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class Dao {
     }
 
     private void createDocumentInFirestore(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
-        Date currentTime = Calendar.getInstance().getTime();
+        LocalDate currentTime = LocalDate.now();
         // Create a new imageDoc
         Map<String, Object> imageDoc = new HashMap<>();
         imageDoc.put("latitude", lastKnownLocation.getLatitude());
