@@ -32,18 +32,20 @@ public class BllFacade {
         initializeArbitrator();
     }
 
-    private void initializeArbitrator(){/*
-        IBehaviour roam = new RoamBehaviour(this);
+    private void initializeArbitrator(){
+       /* IBehaviour roam = new RoamBehaviour(this);
         IBehaviour back = new BackBehaviour(this);
         IBehaviour changeDir = new ChangeDirectionBehaviour(this);
         IBehaviour forward = new ForwardBehaviour(this);
         IBehaviour left = new LeftBehaviour(this);
         IBehaviour right = new RightBehaviour(this);
         IBehaviour stop = new StopBehaviour(this);
+        */
         IBehaviour takePicture = new TakePictureBehaviour(this);
-        IBehaviour quit = new QuitBehaviour(this);
-        IBehaviour[] behaviours = {stop, right,left,forward,changeDir,back,roam,takePicture,quit};
-        arb = new Arbitrator(behaviours);*/
+        //IBehaviour quit = new QuitBehaviour(this);
+        //        IBehaviour[] behaviours = {stop, right,left,forward,changeDir,back,roam,takePicture,quit};
+           IBehaviour[] behaviours = {takePicture};
+        arb = new Arbitrator(behaviours);
     }
     public GpsLocation getGpsLocation() {
         return gpsLocation;
@@ -75,7 +77,7 @@ public class BllFacade {
 
 
     public void startAbitrator(){
-        //threadArbitrator(arb);
+        threadArbitrator(arb);
     }
     private void threadArbitrator(final Arbitrator arbitrator) {
         new Thread() {

@@ -182,17 +182,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mIntermediateMat.release();
         mIsRunning = false;
     }
-    boolean picturesnap = true;
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
-        if(picturesnap){
-        mBllFac.getmDalFac().getmDao().uploadImage(
-                mBllFac.getImgProcessing().convertMatToBitmap(mRgba),
-                mBllFac.getGpsLocation().lastKnownLocation(),
-                new Callback());
-        picturesnap = false;
-        }
+
         return mRgba;
     }
 
@@ -203,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 //TODO fix this so it fits the layers
              /*
                 mBllFac.getmDalFac().getmDao().uploadImage(
@@ -215,7 +209,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         });
                   */
 
-                mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
+                //mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
+                //mBllFac.getmDalFac().getmDao().uploadImage(mBllFac.getImgProcessing().convertMatToBitmap(mRgba), mBllFac.getGpsLocation().lastKnownLocation(), new Callback());
                 new Thread(new ImgProcessingRunnable()).start();
 
 
@@ -230,13 +225,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-            while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
+            /*while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
                 Thread.yield();
-            }
+            }*/
             while (mIsRunning) {
                 Mat currentFrame;
                 currentFrame = mRgba;
                 Circle circle = imgProc.getCircle(currentFrame, mHSV, mThresholded, mThresholded2, mArray255, mDistance);
+
                 mBllFac.getDecisionMaker().MakeDecision(circle, currentFrame);
 
                 if (circle != null) {

@@ -38,7 +38,7 @@ public class Dao {
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference();
     }
-
+    //uploads image by first creating a document in firestore and then uploading the image
     public boolean uploadImage(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
         new Thread() {
             @Override
@@ -56,7 +56,7 @@ public class Dao {
         Map<String, Object> imageDoc = new HashMap<>();
         imageDoc.put("latitude", lastKnownLocation.getLatitude());
         imageDoc.put("longitude", lastKnownLocation.getLongitude());
-        imageDoc.put("timeStamp", currentTime);
+        imageDoc.put("time", currentTime.toString());
 
         // Add a new document with a generated ID
         mDb.collection("pictures")
@@ -98,24 +98,4 @@ public class Dao {
 
     }
 
-//    private void updateMetadata(Location lastKnownLocation) {
-//        StorageMetadata metadata = new StorageMetadata.Builder()
-//                .setCustomMetadata("Latitude", Double.toString(lastKnownLocation.getLatitude()))
-//                .setCustomMetadata("Longitude", Double.toString(lastKnownLocation.getLongitude()))
-//                .build();
-//
-//        mThisImageRef.updateMetadata(metadata)
-//                .addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
-//                    @Override
-//                    public void onSuccess(StorageMetadata storageMetadata) {
-//                        //Handles successful update of matadata
-//                    }
-//                })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception exception) {
-//                        Log.d(TAG, exception.toString());
-//                    }
-//                });
-//    }
 }

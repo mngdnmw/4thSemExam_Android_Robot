@@ -18,7 +18,6 @@ public class TakePictureBehaviour implements IBehaviour {
     @Override
     public boolean takeControl() {
         if (bllFacade.getDecisionMaker().command == DecisionMaker.Command.TAKE_PICTURE) {
-            bllFacade.getDecisionMaker().command= DecisionMaker.Command.DO_NOTHING;
             return true;
         }
         return false;

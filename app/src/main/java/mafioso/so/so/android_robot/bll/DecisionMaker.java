@@ -29,6 +29,7 @@ public class DecisionMaker {
     private Command lastCommand;
     public Command command;
     private BllFacade bllFadace;
+
     public DecisionMaker(int width, int height, BllFacade bllFacade) {
         command = Command.DO_NOTHING;
         this.width = width;
@@ -36,7 +37,7 @@ public class DecisionMaker {
         crntDiameter = NO_DIAMETER;
         crntPoint = NO_POINT;
         this.bllFadace = bllFacade;
-        Actions actions = new Actions(bllFacade);
+
         if (this.width <= this.height) {
             range = this.height / 8;
         } else {
@@ -54,12 +55,14 @@ public class DecisionMaker {
         lastDiameter = crntDiameter;
         lastCommand = command;
         this.currentFrame = currentFrame;
-
+        String debug = "Making Decision";
         //No circle found in picture.
         if (circle != null) {
             crntPoint = circle.getCenter();
             crntDiameter = circle.getDiameter();
+            /*
             if (lastPoint == NO_POINT && lastDiameter == NO_DIAMETER) {
+
                 command = Command.STOP;
             } else if (crntPoint.x <= ((width / 2) - (range * 2))) {
 
@@ -67,19 +70,24 @@ public class DecisionMaker {
             } else if (crntPoint.x >= ((width / 2) + (range * 2))) {
 
                 command = Command.RIGHT;
-            } else if (lastCommand == Command.OBJECT_FOUND) {
+            } */
+            if (lastCommand == Command.OBJECT_FOUND) {
 
+                debug += ": Take Picture";
                 command = Command.TAKE_PICTURE;
-            } else if (lastCommand == Command.TAKE_PICTURE) {
-
+            }
+            /*else if (lastCommand == Command.TAKE_PICTURE) {
+                bllFadace.getDebugger().setDebug("ChangeDirection");
                 command = Command.CHANGEDIR;
-            } else {
+            } */
+            else {
                 command = Command.OBJECT_FOUND;
             }
+
         }
         //Circle not found.
         else {
-
+/*
             // if( pointRangeCheck(lastPoint, crntPoint))
             crntPoint = NO_POINT;
             crntDiameter = NO_DIAMETER;
@@ -100,7 +108,7 @@ public class DecisionMaker {
             }
             else{
                 command = Command.ROAM;
-            }
+            }*/
 
         }
          /*
@@ -116,6 +124,7 @@ public class DecisionMaker {
              }
          }*/
 
+        bllFadace.getDebugger().setDebug(debug);
     }
 
 
@@ -155,59 +164,9 @@ public class DecisionMaker {
                 return "";
         }
     }
-
     public Command getCommand() {
         return command;
     }
-
-    private class Actions{
-        BllFacade bllFacade;
-        private Actions(BllFacade bllFacade){
-        this.bllFacade = bllFacade;
-        }
-        protected void back(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.BACK));
-        }
-        protected void changeDirection(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.CHANGEDIR));
-        }
-        protected void forward(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.FORWARD));
-        }
-        protected void left(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.LEFT));
-        }
-        protected void objectFound(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.STOP));
-        }
-        protected void quit(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.QUIT));
-        }
-        protected void right(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.RIGHT));
-        }
-        protected void roam(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.ROAM));
-        }
-        protected void stop(){
-            bllFacade.getmDalFac().getmRobotCon().sendCommand(DecisionMaker.getStringCommand(Command.STOP));
-        }
-        protected void takePicture(){ bllFacade.getmDalFac().getmDao().uploadImage(
-                bllFacade.getImgProcessing().convertMatToBitmap(
-                        bllFacade.getDecisionMaker().getCurrentFrame()),
-                bllFacade.getGpsLocation().lastKnownLocation(),
-                new Callback() {
-                    @Override
-                    public void onTaskCompleted(boolean done) {
-                        bllFacade.getPhotoUploadedNotifier().setUploaded(true);
-                    }
-                });
-        }
-
-
-    }
-
-
 }
 
 
