@@ -77,7 +77,7 @@ public class Dao {
     }
 
     private void createFileInStorage(Bitmap image, final Callback callback, String uid) {
-        mThisImageRef = mStorageRef.child("/images/" + uid + ".jpg");
+        mThisImageRef = mStorageRef.child("/images/" + uid);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
