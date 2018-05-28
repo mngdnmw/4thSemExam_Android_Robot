@@ -38,6 +38,7 @@ public class Dao {
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference();
     }
+
     //uploads image by first creating a document in firestore and then uploading the image
     public boolean uploadImage(final Bitmap image, final Location lastKnownLocation, final Callback callback) {
         new Thread() {
@@ -77,7 +78,7 @@ public class Dao {
     }
 
     private void createFileInStorage(Bitmap image, final Callback callback, String uid) {
-        mThisImageRef = mStorageRef.child("/images/" + uid);
+        mThisImageRef = mStorageRef.child("/images/" + uid + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);

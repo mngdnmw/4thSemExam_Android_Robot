@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: D:\\School\\Autom Agents\\4thSemExam_Android_Robot\\OpenCV-android-sdk\\sdk\\java\\src\\org\\opencv\\engine\\OpenCVEngineInterface.aidl
+ * Original file: /Users/meng/Projects/4thSemExam_Android_Robot/OpenCV-android-sdk/sdk/java/src/org/opencv/engine/OpenCVEngineInterface.aidl
  */
 package org.opencv.engine;
 /**
