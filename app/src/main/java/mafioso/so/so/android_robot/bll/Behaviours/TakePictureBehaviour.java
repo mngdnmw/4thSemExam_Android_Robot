@@ -36,9 +36,6 @@ public class TakePictureBehaviour implements IBehaviour {
                 bllFacade.getPhotoUploadedNotifier().setUploaded(true);
             }
         });
-        while(!suppressed){
-            Thread.yield();
-        }
     }
     @Override
     public void suppress() {

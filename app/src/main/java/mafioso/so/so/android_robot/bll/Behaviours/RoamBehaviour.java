@@ -15,11 +15,8 @@ public class RoamBehaviour implements IBehaviour {
     }
     @Override
     public boolean takeControl() {
-        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.ROAM) {
             return true;
-        }
 
-        return false;
     }
 
     @Override
