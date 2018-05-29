@@ -89,6 +89,7 @@ public class DecisionMaker {
 
                 debug += ": Take Picture";
                 command = Command.TAKE_PICTURE;
+                PictureTaken();
             }
             /*else if (lastCommand == Command.TAKE_PICTURE) {
                 bllFadace.getDebugger().setDebug("ChangeDirection");

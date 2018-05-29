@@ -171,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         mThresholded = new Mat(height, width, CvType.CV_8UC1);
         mThresholded2 = new Mat(height, width, CvType.CV_8UC1);
         mBllFac.setDecisionMaker(width, height);
-        mBllFac.startAbitrator();
 
     }
 
@@ -209,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                         });
                   */
 
-                //mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
+                mBllFac.getmDalFac().getmRobotCon().threadConnection(mTxtIP.getText().toString());
                 //mBllFac.getmDalFac().getmDao().uploadImage(mBllFac.getImgProcessing().convertMatToBitmap(mRgba), mBllFac.getGpsLocation().lastKnownLocation(), new Callback());
                 new Thread(new ImgProcessingRunnable()).start();
 
@@ -225,9 +224,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         public void run() {
             ImgProcessing imgProc = new ImgProcessing();
-            /*while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
+            while (!mBllFac.getmDalFac().getmRobotCon().isConnected()) {
                 Thread.yield();
-            }*/
+            }
+            mBllFac.startAbitrator();
             while (mIsRunning) {
                 Mat currentFrame;
                 currentFrame = mRgba;
