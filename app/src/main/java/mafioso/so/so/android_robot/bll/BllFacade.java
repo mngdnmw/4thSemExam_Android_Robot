@@ -4,6 +4,7 @@ import android.content.Context;
 
 import mafioso.so.so.android_robot.bll.Behaviours.ChangeDirectionBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.DirectionalControl;
+import mafioso.so.so.android_robot.bll.Behaviours.ObjectFound;
 import mafioso.so.so.android_robot.bll.Behaviours.QuitBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.RoamBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.StopBehaviour;
@@ -33,13 +34,13 @@ public class BllFacade {
         IBehaviour roam = new RoamBehaviour(this);
         IBehaviour changeDir = new ChangeDirectionBehaviour(this);
 
-        IBehaviour forward = new DirectionalControl(this);
+        IBehaviour directionalControl = new DirectionalControl(this);
 
         IBehaviour stop = new StopBehaviour(this);
-
+        IBehaviour objectFound = new ObjectFound(this);
         IBehaviour takePicture = new TakePictureBehaviour(this);
         IBehaviour quit = new QuitBehaviour(this);
-        IBehaviour[] behaviours = {roam,changeDir,stop,forward,takePicture,quit};
+        IBehaviour[] behaviours = {roam,changeDir,stop,directionalControl, objectFound,takePicture,quit};
         //IBehaviour[] behaviours = {takePicture};
         arb = new Arbitrator(behaviours);
     }
