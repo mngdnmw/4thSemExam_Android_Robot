@@ -23,9 +23,7 @@ public class ObjectFound implements IBehaviour {
     @Override
     public void action() {
         bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(DecisionMaker.Command.STOP)));
-        while(!suppressed){
-            Thread.yield();
-        }
+
     }
 
     @Override

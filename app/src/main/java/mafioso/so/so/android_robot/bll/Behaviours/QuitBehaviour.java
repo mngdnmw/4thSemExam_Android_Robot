@@ -24,9 +24,7 @@ public class QuitBehaviour implements IBehaviour {
     public void action() {
         bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(DecisionMaker.Command.QUIT)));
 
-        while(!suppressed){
-            Thread.yield();
-        }
+
     }
 
     @Override

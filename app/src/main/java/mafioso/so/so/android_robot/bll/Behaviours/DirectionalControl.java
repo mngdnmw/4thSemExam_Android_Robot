@@ -5,19 +5,23 @@ import mafioso.so.so.android_robot.bll.DecisionMaker;
 import mafioso.so.so.android_robot.bll.IBehaviour;
 import mafioso.so.so.android_robot.dal.RobotConnection;
 
-public class LeftBehaviour implements IBehaviour {
+public class DirectionalControl implements IBehaviour {
     private boolean suppressed;
     private BllFacade bllFacade;
-    public LeftBehaviour(BllFacade bllFacade)
+    public DirectionalControl(BllFacade bllFacade)
     {
         this.bllFacade = bllFacade;
         suppressed = false;
     }
     @Override
     public boolean takeControl() {
-        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.LEFT) {
+        if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.FORWARD ||
+        bllFacade.getDecisionMaker().command == DecisionMaker.Command.BACK ||
+        bllFacade.getDecisionMaker().command == DecisionMaker.Command.LEFT ||
+        bllFacade.getDecisionMaker().command == DecisionMaker.Command.RIGHT
+                ) {
 
-            bllFacade.getDebugger().setDebug("Left");
+            bllFacade.getDebugger().setDebug("Forward");
             return true;
         }
         return false;
@@ -25,10 +29,8 @@ public class LeftBehaviour implements IBehaviour {
 
     @Override
     public void action() {
-        bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(DecisionMaker.Command.LEFT)));
-        while(!suppressed){
-            Thread.yield();
-        }
+        bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(bllFacade.getDecisionMaker().command)));
+
     }
 
     @Override

@@ -34,6 +34,7 @@ public class TakePictureBehaviour implements IBehaviour {
             @Override
             public void onTaskCompleted(boolean done) {
                 bllFacade.getPhotoUploadedNotifier().setUploaded(true);
+                bllFacade.getDecisionMaker().PictureTaken();
             }
         });
     }

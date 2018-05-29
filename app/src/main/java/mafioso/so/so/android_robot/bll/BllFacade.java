@@ -2,12 +2,9 @@ package mafioso.so.so.android_robot.bll;
 
 import android.content.Context;
 
-import mafioso.so.so.android_robot.bll.Behaviours.BackBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.ChangeDirectionBehaviour;
-import mafioso.so.so.android_robot.bll.Behaviours.ForwardBehaviour;
-import mafioso.so.so.android_robot.bll.Behaviours.LeftBehaviour;
+import mafioso.so.so.android_robot.bll.Behaviours.DirectionalControl;
 import mafioso.so.so.android_robot.bll.Behaviours.QuitBehaviour;
-import mafioso.so.so.android_robot.bll.Behaviours.RightBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.RoamBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.StopBehaviour;
 import mafioso.so.so.android_robot.bll.Behaviours.TakePictureBehaviour;
@@ -36,16 +33,13 @@ public class BllFacade {
         IBehaviour roam = new RoamBehaviour(this);
         IBehaviour changeDir = new ChangeDirectionBehaviour(this);
 
-        //Needs to be packed into one behaviour
-        IBehaviour back = new BackBehaviour(this);
-        IBehaviour forward = new ForwardBehaviour(this);
-        IBehaviour left = new LeftBehaviour(this);
-        IBehaviour right = new RightBehaviour(this);
+        IBehaviour forward = new DirectionalControl(this);
+
         IBehaviour stop = new StopBehaviour(this);
 
         IBehaviour takePicture = new TakePictureBehaviour(this);
         IBehaviour quit = new QuitBehaviour(this);
-        IBehaviour[] behaviours = {roam,changeDir,stop, right,left,forward,back,takePicture,quit};
+        IBehaviour[] behaviours = {roam,changeDir,stop,forward,takePicture,quit};
         //IBehaviour[] behaviours = {takePicture};
         arb = new Arbitrator(behaviours);
     }

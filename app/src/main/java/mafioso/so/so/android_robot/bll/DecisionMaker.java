@@ -18,9 +18,8 @@ public class DecisionMaker {
     private Mat currentFrame;
     private int width, height;
     private int range;
-    private GpsLocation mGps;
-    private
-    Arbitrator arb;
+   private int maxTicks = 5;
+   private int ticks;
 
     public enum Command {
         QUIT, OBJECT_FOUND, TAKE_PICTURE, CHANGEDIR, ROAM, STOP, FORWARD, LEFT, RIGHT, BACK, WAIT, DO_NOTHING
@@ -39,9 +38,9 @@ public class DecisionMaker {
         this.bllFadace = bllFacade;
 
         if (this.width <= this.height) {
-            range = this.height / 8;
+            range = this.height / 3;
         } else {
-            range = this.width / 8;
+            range = this.width / 3;
         }
 
     }
@@ -57,20 +56,35 @@ public class DecisionMaker {
         this.currentFrame = currentFrame;
         String debug = "Making Decision";
         //No circle found in picture.
+        if(ticks != 0){
+            if(ticks == maxTicks){
+                command = Command.CHANGEDIR;
+            }
+            else{
+                command = Command.ROAM;
+            }
+            ticks--;
+        }
         if (circle != null) {
             crntPoint = circle.getCenter();
             crntDiameter = circle.getDiameter();
-            /*
+
             if (lastPoint == NO_POINT && lastDiameter == NO_DIAMETER) {
 
                 command = Command.STOP;
-            } else if (crntPoint.x <= ((width / 2) - (range * 2))) {
+            } else if (crntPoint.x <= ((width / 2) - (range))) {
 
                 command = Command.LEFT;
-            } else if (crntPoint.x >= ((width / 2) + (range * 2))) {
+            } else if (crntPoint.x >= ((width / 2) + (range))) {
 
                 command = Command.RIGHT;
-            } */
+            }
+            else if(crntPoint.y >= (height/2) + range){
+                command = Command.BACK;
+            }
+            else if(crntPoint.y <= (height/2) - range){
+                command = Command.FORWARD;
+            }
             if (lastCommand == Command.OBJECT_FOUND) {
 
                 debug += ": Take Picture";
@@ -87,8 +101,8 @@ public class DecisionMaker {
         }
         //Circle not found.
         else {
-/*
-            // if( pointRangeCheck(lastPoint, crntPoint))
+
+           // if( pointRangeCheck(lastPoint, crntPoint))
             crntPoint = NO_POINT;
             crntDiameter = NO_DIAMETER;
             //if there was no circle last picture, we once again continue to roam
@@ -108,11 +122,10 @@ public class DecisionMaker {
             }
             else{
                 command = Command.ROAM;
-            }*/
-
+            }
         }
-         /*
-         else{
+
+  /*       else{
              if(crntPoint.x <= ((width/2)-(range*2))){
                  command = Command.LEFT;
 
@@ -122,9 +135,13 @@ public class DecisionMaker {
                  command = Command.RIGHT;
                  Log.d(TAG, "MakeDecision: Right " + crntPoint.x);
              }
-         }*/
 
+         }
+*/
         bllFadace.getDebugger().setDebug(debug);
+    }
+    public void PictureTaken(){
+        ticks = maxTicks;
     }
 
 
