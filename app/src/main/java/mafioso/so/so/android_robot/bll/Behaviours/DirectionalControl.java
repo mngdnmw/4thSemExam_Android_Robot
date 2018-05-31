@@ -21,7 +21,7 @@ public class DirectionalControl implements IBehaviour {
         bllFacade.getDecisionMaker().command == DecisionMaker.Command.RIGHT
                 ) {
 
-            bllFacade.getDebugger().setDebug("Forward");
+
             return true;
         }
         return false;
@@ -29,6 +29,10 @@ public class DirectionalControl implements IBehaviour {
 
     @Override
     public void action() {
+        while(bllFacade.getDecisionMaker().command == DecisionMaker.Command.FORWARD ||
+                bllFacade.getDecisionMaker().command == DecisionMaker.Command.BACK ||
+                bllFacade.getDecisionMaker().command == DecisionMaker.Command.LEFT ||
+                bllFacade.getDecisionMaker().command == DecisionMaker.Command.RIGHT)
         bllFacade.getmDalFac().getmRobotCon().sendCommand((DecisionMaker.getStringCommand(bllFacade.getDecisionMaker().command)));
 
     }

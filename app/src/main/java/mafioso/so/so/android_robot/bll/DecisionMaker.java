@@ -65,10 +65,10 @@ public class DecisionMaker {
             }
             ticks--;
         }
-        if (circle != null) {
+        if (circle != null && circle.getDiameter() ==0) {
             crntPoint = circle.getCenter();
             crntDiameter = circle.getDiameter();
-
+            debug += " ObjectFound ";
             if (lastPoint == NO_POINT && lastDiameter == NO_DIAMETER) {
 
                 command = Command.STOP;
@@ -85,7 +85,7 @@ public class DecisionMaker {
             else if(crntPoint.y <= (height/2) - range){
                 command = Command.FORWARD;
             }
-            if (lastCommand == Command.OBJECT_FOUND) {
+            else if (lastCommand == Command.OBJECT_FOUND && ticks == 0) {
 
                 debug += ": Take Picture";
                 command = Command.TAKE_PICTURE;
@@ -95,14 +95,17 @@ public class DecisionMaker {
                 bllFadace.getDebugger().setDebug("ChangeDirection");
                 command = Command.CHANGEDIR;
             } */
-            else {
+            else if (ticks > 0) {
                 command = Command.OBJECT_FOUND;
+            }
+            else{
+                command = Command.CHANGEDIR;
             }
 
         }
         //Circle not found.
         else {
-
+            debug+= " NoObject";
            // if( pointRangeCheck(lastPoint, crntPoint))
             crntPoint = NO_POINT;
             crntDiameter = NO_DIAMETER;
@@ -138,7 +141,9 @@ public class DecisionMaker {
              }
 
          }
-*/
+*/      if(ticks != 0){
+        ticks--;}
+        debug += " Ticks: " +ticks;
         bllFadace.getDebugger().setDebug(debug);
     }
     public void PictureTaken(){

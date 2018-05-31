@@ -37,6 +37,7 @@ public class TakePictureBehaviour implements IBehaviour {
 
             }
         });
+        bllFacade.getDecisionMaker().command = DecisionMaker.Command.DO_NOTHING;
     }
     @Override
     public void suppress() {

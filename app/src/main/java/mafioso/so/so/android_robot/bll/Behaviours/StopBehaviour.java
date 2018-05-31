@@ -17,7 +17,7 @@ public class StopBehaviour implements IBehaviour {
     public boolean takeControl() {
         if(bllFacade.getDecisionMaker().command == DecisionMaker.Command.STOP) {
 
-            bllFacade.getDebugger().setDebug("Stop");
+
             return true;
         }
         return false;
